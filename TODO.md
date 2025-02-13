@@ -1,0 +1,5 @@
+- [ ] Deploy
+- [ ] Basic UI Scaffold
+- [ ] Database stuff
+- [ ] Authentication
+- [ ] Routing
