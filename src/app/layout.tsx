@@ -14,7 +14,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={cn(GeistSans.className, 'h-screen w-screen overflow-hidden')}>
+    <html lang="en" className={cn(GeistSans.className, 'h-screen w-screen overflow-hidden dark')}>
       <body>{children}</body>
     </html>
   );

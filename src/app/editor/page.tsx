@@ -12,14 +12,25 @@ const initialFrames = [
     name: "Frame 0",
     width: 100,
     height: 300,
+    x: 0,
+    y: 0,
+  },
+  {
+    id: "frame-1",
+    name: "Frame 1",
+    width: 100,
+    height: 300,
+    x: 0,
+    y: 0,
   },
 ];
 
 export default function EditorPage() {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [selectedId, selectObject] = useState<string | null>(null);
-  const [frames, setFrames] = useState(initialFrames);
+  const [tool, setTool] = useState<"move" | "hand">("move");
 
+  // Deselect any obect when clicked on empty area(stage)
   const checkDeselect = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     // deselect when clicked on empty area
     const clickedOnEmpty = e.target === e.target.getStage();
@@ -28,6 +39,7 @@ export default function EditorPage() {
     }
   };
 
+  // Set stage dimensions on window resize
   useEffect(() => {
     const updateDimensions = () => {
       setDimensions({
@@ -53,37 +65,24 @@ export default function EditorPage() {
       <Stage
         width={dimensions.width}
         height={dimensions.height}
-        draggable={true}
+        draggable={tool === "hand"}
         className="bg-[#1A1A1A]"
         onMouseDown={checkDeselect}
         onTouchStart={checkDeselect}
       >
-        {frames.map((frame, i) => {
+        {initialFrames.map((frameData, i) => {
           return (
             <Frame
+              data={frameData}
               key={i}
-              name={frame.name}
-              rectProps={{
-                width: frame.width,
-                height: frame.height,
-                id: frame.id,
-                onSelect: () => selectObject(frame.id),
-                isSelected: selectedId === frame.id,
-                onChange: (newAttrs) => {
-                  const framesCopy = frames.slice();
-                  const frameI = framesCopy[i]!;
-                  if(frameI){
-                    frameI.height = newAttrs.height;
-                    frameI.width = newAttrs.width;
-                  }
-                  setFrames(framesCopy);
-                }
-              }}
+              onSelect={tool === "move" ? () => selectObject(frameData.id) : () => {}}
+              isSelected={selectedId === frameData.id}
+              draggable={tool === "move"}
             />
           );
         })}
       </Stage>
-      <EditorUI />
+      <EditorUI tool={tool} selectTool={(e) => setTool(e)}/>
     </div>
   );
 }

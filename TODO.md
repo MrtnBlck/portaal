@@ -19,9 +19,9 @@
 - [ ] Landing page
 - [x] ~/editor:: basic functionality
 - [~] ~/editor:: Frames
-- [~] ~/editor:: Frame resizing
-- [~] ~/editor:: Frame moving
-- [ ] ~/editor:: Move/Hand tool (+shortcut)
+- [x] ~/editor:: Frame resizing
+- [x] ~/editor:: Frame moving
+- [x] ~/editor:: Move/Hand tool (+shortcut)
 - [ ] ~/editor:: Frame deleting
 - [ ] ~/editor:: Frame adding
 - [ ] ~/editor:: Frame content CRUD

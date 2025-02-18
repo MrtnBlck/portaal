@@ -1,35 +1,41 @@
 "use client";
 
 import { Layer, Rect, Text, Transformer } from "react-konva";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import Konva from "konva";
+// import { debounce } from "lodash";
 
 interface RectProps {
-  width: number;
-  height: number;
+  data: FrameData;
   fill?: string;
-  id: string;
   onSelect: () => void;
   isSelected: boolean;
-  onChange?: (newProps: any) => void;
+  setData: (e: FrameData) => void;
+}
+
+interface FrameData {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  x: number;
+  y: number;
 }
 
 interface FrameProps {
-  x?: number;
-  y?: number;
-  name: string;
+  data: FrameData;
+  onSelect: () => void;
+  isSelected: boolean;
+  draggable: boolean;
   children?: React.ReactNode;
-  rectProps: RectProps;
 }
 
 function FrameRect({
-  width,
-  height,
+  data,
   fill = "#FFFFFF",
-  id,
   onSelect,
   isSelected,
-  onChange,
+  setData,
 }: RectProps) {
   const shapeRef = useRef<Konva.Rect>(null);
   const trRef = useRef<Konva.Transformer>(null);
@@ -45,22 +51,28 @@ function FrameRect({
   return (
     <>
       <Rect
-        y={20}
-        width={width}
-        height={height}
+        x={data.x}
+        y={data.y}
+        width={data.width}
+        height={data.height}
         fill={fill}
         onClick={onSelect}
         onTap={onSelect}
         ref={shapeRef}
-        onTransformEnd={(e) => {
+        onTransform={(e) => {
           const node = shapeRef.current;
           if (node) {
             const scaleX = node.scaleX();
             const scaleY = node.scaleY();
-        
+            
+            // TODO: fix origin of scaling [PRIO-LOW]
+            // TODO: reduce event firing [PRIO-HIGH]
             node.scaleX(1);
             node.scaleY(1);
-            onChange?.({
+            setData({
+              ...data,
+              x: node.x(),
+              y: node.y(),
               width: Math.max(5, node.width() * scaleX),
               height: Math.max(5, node.height() * scaleY),
             });
@@ -72,6 +84,13 @@ function FrameRect({
           ref={trRef}
           flipEnabled={false}
           rotateEnabled={false}
+          keepRatio={false}
+          enabledAnchors={[
+            'top-left',
+            'top-right',
+            'bottom-left',
+            'bottom-right',
+          ]}
           boundBoxFunc={(oldBox, newBox) => {
             // limit resize
             if (Math.abs(newBox.width) < 5 || Math.abs(newBox.height) < 5) {
@@ -85,12 +104,14 @@ function FrameRect({
   );
 }
 
-export function Frame({ x, y, name, children, rectProps }: FrameProps) {
+export function Frame({ data, onSelect, isSelected, draggable, children }: FrameProps) {
+  const [frameData, setFrameData] = useState(data);
   return (
-    <Layer draggable={true} x={x} y={y}>
-      <Text text={name} fill="#979797" />
-      <FrameRect {...rectProps} />
+    <Layer draggable={draggable}>
+      <Text text={frameData.name} fill="#979797" x={frameData.x} y={frameData.y-20} />
+      <FrameRect data={frameData} isSelected={isSelected} onSelect={onSelect} setData={(e) => setFrameData(e)} />
       {children}
     </Layer>
   );
 }
+
