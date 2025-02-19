@@ -2,7 +2,7 @@
 
 import { Layer, Rect, Text, Transformer } from "react-konva";
 import { useRef, useEffect, useState } from "react";
-import Konva from "konva";
+import type Konva from "konva";
 // import { debounce } from "lodash";
 
 interface RectProps {
@@ -59,7 +59,7 @@ function FrameRect({
         onClick={onSelect}
         onTap={onSelect}
         ref={shapeRef}
-        onTransformEnd={(e) => {
+        onTransformEnd={() => {
           const node = shapeRef.current;
           if (node) {
             const scaleX = node.scaleX();

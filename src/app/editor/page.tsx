@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Stage } from "react-konva";
 import { Frame } from "./_components/frame";
 import { EditorUI } from "./_components/editor_ui";
-import { KonvaEventObject } from "konva/lib/Node";
+import type { KonvaEventObject } from "konva/lib/Node";
 
 type ToolState = {
   type: "move" | "hand";
@@ -88,9 +88,9 @@ export default function EditorPage() {
 
     const handleMouseDown = (e: MouseEvent) => {
       setMouseButton(e.button); // 0: left button, 1: middle button, 2: right button
-      if (e.button !== 0 && e.button !== 2){
+      if (e.button !== 0 && e.button !== 2) {
         //TODO: fix onmousedown for other buttons
-        setTool({ type: "hand", method: "toggle" })
+        setTool({ type: "hand", method: "toggle" });
       }
     };
 
@@ -129,7 +129,8 @@ export default function EditorPage() {
         draggable={tool.type === "hand"}
         className="bg-[#1A1A1A]"
         onMouseDown={checkDeselect}
-        onTouchStart={checkDeselect}v
+        onTouchStart={checkDeselect}
+        v
         style={{ cursor: tool.type === "hand" ? "grab" : "default" }}
       >
         {initialFrames.map((frameData, i) => {
@@ -137,11 +138,9 @@ export default function EditorPage() {
             <Frame
               data={frameData}
               key={i}
-              onSelect={
-                tool.type === "move"
-                  ? () => selectObject(frameData.id)
-                  : () => {}
-              }
+              onSelect={() => {
+                if (tool.type === "move") selectObject(frameData.id);
+              }}
               isSelected={selectedId === frameData.id}
               draggable={tool.type === "move"}
             />
