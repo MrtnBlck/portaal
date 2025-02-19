@@ -59,7 +59,7 @@ function FrameRect({
         onClick={onSelect}
         onTap={onSelect}
         ref={shapeRef}
-        onTransform={(e) => {
+        onTransformEnd={(e) => {
           const node = shapeRef.current;
           if (node) {
             const scaleX = node.scaleX();

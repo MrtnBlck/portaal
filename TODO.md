@@ -4,9 +4,11 @@
 
 - [x] Deploy
 - [~] Basic UI Scaffold
+- [ ] Fix vercel build
 - [ ] Database stuff
 - [ ] Authentication
 - [ ] Routing
+- [ ] useRef for shortcuts
 
 ## Smaller tasks
 
@@ -21,7 +23,8 @@
 - [~] ~/editor:: Frames
 - [x] ~/editor:: Frame resizing
 - [x] ~/editor:: Frame moving
-- [x] ~/editor:: Move/Hand tool (+shortcut)
+- [x~] ~/editor:: Move/Hand tool (+shortcut)
+- [x~] ~/editor:: Tooltips 
 - [ ] ~/editor:: Frame deleting
 - [ ] ~/editor:: Frame adding
 - [ ] ~/editor:: Frame content CRUD
@@ -76,6 +79,13 @@
 - [ ] ~/editor:: Adjustment layers
 - [ ] ~/editor:: Filters
 - [ ] ~/editor:: Blending modes
+- [ ] ~/editor:: Custom cursors
+
+```tsx
+<Stage
+    style={{ cursor: tool === "hand" ? "grab" : `url(data:image/svg+xml;base64,${btoa('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="black" stroke="white" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mouse-pointer-2"><path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z"/></svg>')}), auto` }}
+>
+```
 
 ## User, data and operation types
 
@@ -114,14 +124,14 @@ graph TD;
     Bejelentkezés <--> Regisztráció
     Bejelentkezés --> Saját_projektek
     Regisztráció --> Saját_projektek
-    
+
     Saját_projektek <--> Új_projekt
     Saját_projektek <--> Szerkesztő
     Saját_projektek <--> Értesítések
     Saját_projektek <--> Felhasználói_profil
     Saját_projektek <--> Admin_felület
     Saját_projektek <--> Kommunikációs_oldal
-    
+
     Új_projekt --> Szerkesztő
     Értesítések <--> Kommunikációs_oldal
     Szerkesztő <--> Kommunikációs_oldal
@@ -188,4 +198,3 @@ erDiagram
     FELHASZNALOK ||--o{ UZENETEK : "elküld"
     FELHASZNALOK ||--o{ UZENETEK : "fogad"
 ```
-
