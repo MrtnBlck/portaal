@@ -62,19 +62,35 @@ function FrameRect({
         onTransformEnd={() => {
           const node = shapeRef.current;
           if (node) {
+            console.log(node);
             const scaleX = node.scaleX();
             const scaleY = node.scaleY();
-            
-            // TODO: fix origin of scaling [PRIO-LOW]
-            // TODO: reduce event firing [PRIO-HIGH]
+
+            const size = {
+              width: Math.max(5, node.width() * scaleX),
+              height: Math.max(5, node.height() * scaleY),
+            };
+
+            shapeRef.current?.setSize(size);
             node.scaleX(1);
             node.scaleY(1);
             setData({
               ...data,
               x: node.x(),
               y: node.y(),
-              width: Math.max(5, node.width() * scaleX),
-              height: Math.max(5, node.height() * scaleY),
+              ...size,
+            });
+          }
+        }}
+        onTransform={() => {
+          const node = shapeRef.current;
+          // TODO: limit property updates
+          // TODO: only update X,Y, do not overrite other properties
+          if (node) {
+            setData({
+              ...data,
+              x: node.x(),
+              y: node.y(),
             });
           }
         }}
@@ -85,12 +101,6 @@ function FrameRect({
           flipEnabled={false}
           rotateEnabled={false}
           keepRatio={false}
-          enabledAnchors={[
-            'top-left',
-            'top-right',
-            'bottom-left',
-            'bottom-right',
-          ]}
           boundBoxFunc={(oldBox, newBox) => {
             // limit resize
             if (Math.abs(newBox.width) < 5 || Math.abs(newBox.height) < 5) {
@@ -107,8 +117,8 @@ function FrameRect({
 export function Frame({ data, onSelect, isSelected, draggable, children }: FrameProps) {
   const [frameData, setFrameData] = useState(data);
   return (
-    <Layer draggable={draggable}>
-      <Text text={frameData.name} fill="#979797" x={frameData.x} y={frameData.y-20} />
+    <Layer draggable={draggable} onDragStart={onSelect}>
+      <Text text={frameData.name} fill={isSelected ? "#70AFDC" : "#979797"} x={frameData.x} y={frameData.y-20} />
       <FrameRect data={frameData} isSelected={isSelected} onSelect={onSelect} setData={(e) => setFrameData(e)} />
       {children}
     </Layer>

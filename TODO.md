@@ -19,6 +19,7 @@
 ### Level 1 - Absolutely Must Have
 
 - [ ] Landing page
+- [ ] ~/editor:: layering restructuring
 - [x] ~/editor:: basic functionality
 - [~] ~/editor:: Frames
 - [x] ~/editor:: Frame resizing
@@ -26,7 +27,7 @@
 - [x~] ~/editor:: Move/Hand tool (+shortcut)
 - [x~] ~/editor:: Tooltips 
 - [ ] ~/editor:: Frame deleting
-- [ ] ~/editor:: Frame adding
+- [x] ~/editor:: Frame adding
 - [ ] ~/editor:: Frame content CRUD
 - [ ] ~/editor:: Text
 - [ ] ~/editor:: Image

@@ -1,14 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Stage } from "react-konva";
 import { Frame } from "./_components/frame";
 import { EditorUI } from "./_components/editor_ui";
 import type { KonvaEventObject } from "konva/lib/Node";
 
 type ToolState = {
-  type: "move" | "hand";
+  type: "move" | "hand" | "frame";
   method: "selected" | "toggle";
+};
+
+type DrawingPositions = {
+  x: number;
+  y: number;
 };
 
 const initialFrames = [
@@ -17,16 +22,8 @@ const initialFrames = [
     name: "Frame 0",
     width: 100,
     height: 300,
-    x: 0,
-    y: 0,
-  },
-  {
-    id: "frame-1",
-    name: "Frame 1",
-    width: 100,
-    height: 300,
-    x: 0,
-    y: 0,
+    x: 300,
+    y: 300,
   },
 ];
 
@@ -38,6 +35,85 @@ export default function EditorPage() {
     method: "selected",
   });
   const [mouseButton, setMouseButton] = useState<number | null>(null);
+
+  // Frame drawing states
+  const [frames, setFrames] = useState(initialFrames);
+  const isDrawing = useRef(false);
+  const drawingPositions = useRef<DrawingPositions>({ x: 0, y: 0 });
+
+  const handleStageOnMouseDown = (
+    e: KonvaEventObject<MouseEvent | TouchEvent>,
+  ) => {
+    switch (tool.type) {
+      case "move":
+        checkDeselect(e);
+        break;
+      case "frame":
+        selectObject(null);
+        console.log("frame tool started drawing");
+        const stage = e.target.getStage();
+        if (stage) {
+          const pos = stage.getRelativePointerPosition();
+          if (pos) {
+            isDrawing.current = true;
+            drawingPositions.current = {
+              x: pos.x,
+              y: pos.y,
+            };
+            const newFrame = {
+              id: `frame-${frames.length}`,
+              name: `Frame ${frames.length}`,
+              width: 0,
+              height: 0,
+              x: pos.x,
+              y: pos.y,
+            };
+            setFrames([...frames, newFrame]);
+          }
+        }
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleStageOnMouseMove = (
+    e: KonvaEventObject<MouseEvent | TouchEvent>,
+  ) => {
+    if (tool.type === "frame" && isDrawing.current) {
+      console.log("frame tool drawing");
+      const stage = e.target.getStage();
+      if (stage) {
+        const pos = stage.getRelativePointerPosition();
+        if (pos) {
+          const newFrames = [...frames];
+          const newFrame = newFrames[newFrames.length - 1];
+          if (newFrame) {
+            const x1 = drawingPositions.current.x;
+            const y1 = drawingPositions.current.y;
+            const x2 = pos.x;
+            const y2 = pos.y;
+            newFrame.x = Math.min(x1, x2);
+            newFrame.y = Math.min(y1, y2);
+            newFrame.width = Math.abs(x2 - x1);
+            newFrame.height = Math.abs(y2 - y1);
+            setFrames(newFrames);
+          }
+        }
+      }
+    }
+  };
+
+  const handleStageOnMouseUp = () => {
+    if (tool.type === "frame" && isDrawing.current) {
+      isDrawing.current = false;
+      const newFrames = [...frames];
+      const newFrame = newFrames[newFrames.length - 1];
+      if (newFrame) {
+        selectObject(newFrame.id);
+      }
+    }
+  };
 
   // Deselect any obect when clicked on empty area(stage)
   const checkDeselect = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
@@ -60,7 +136,7 @@ export default function EditorPage() {
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.code) {
         case "Space":
-          if (tool.type === "move") {
+          if (tool.type !== "hand") {
             setTool({ type: "hand", method: "toggle" });
           }
           break;
@@ -69,6 +145,9 @@ export default function EditorPage() {
           break;
         case "KeyH":
           setTool({ type: "hand", method: "selected" });
+          break;
+        case "KeyF":
+          setTool({ type: "frame", method: "selected" });
           break;
         default:
           break;
@@ -82,6 +161,7 @@ export default function EditorPage() {
         tool.method === "toggle" &&
         mouseButton === null
       ) {
+        // TODO: Add check for previous tool
         setTool({ type: "move", method: "selected" });
       }
     };
@@ -96,7 +176,10 @@ export default function EditorPage() {
 
     const handleMouseUp = () => {
       setMouseButton(null);
-      if (tool.type === "hand" && tool.method === "toggle") {
+      if (
+        (tool.type === "hand" && tool.method === "toggle") ||
+        tool.type === "frame"
+      ) {
         setTool({ type: "move", method: "selected" });
       }
     };
@@ -128,12 +211,22 @@ export default function EditorPage() {
         height={dimensions.height}
         draggable={tool.type === "hand"}
         className="bg-[#1A1A1A]"
-        onMouseDown={checkDeselect}
-        onTouchStart={checkDeselect}
-        v
-        style={{ cursor: tool.type === "hand" ? "grab" : "default" }}
+        onMouseDown={handleStageOnMouseDown}
+        onTouchStart={handleStageOnMouseDown}
+        onMouseMove={handleStageOnMouseMove}
+        onTouchMove={handleStageOnMouseMove}
+        onMouseUp={handleStageOnMouseUp}
+        onTouchEnd={handleStageOnMouseUp}
+        style={{
+          cursor:
+            tool.type === "hand"
+              ? "grab"
+              : tool.type === "move"
+                ? "default"
+                : "crosshair",
+        }}
       >
-        {initialFrames.map((frameData, i) => {
+        {frames.map((frameData, i) => {
           return (
             <Frame
               data={frameData}
