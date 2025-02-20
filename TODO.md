@@ -9,25 +9,34 @@
 - [ ] Authentication
 - [ ] Routing
 - [ ] useRef for shortcuts
+- [ ] Layering restructuring (Rect coordinates are in their own layer)
+- [ ] UseEffect separation
 
 ## Smaller tasks
 
 - [ ] tailwind prettier, format on save setup
+
+## Problems
+
+- [ ] Context menu closing (solved by firing esc key).
+- [ ] Frame id duplication, delete problem
 
 ## Features Categorized by Importance Level
 
 ### Level 1 - Absolutely Must Have
 
 - [ ] Landing page
-- [ ] ~/editor:: layering restructuring
 - [x] ~/editor:: basic functionality
 - [~] ~/editor:: Frames
 - [x] ~/editor:: Frame resizing
 - [x] ~/editor:: Frame moving
 - [x~] ~/editor:: Move/Hand tool (+shortcut)
 - [x~] ~/editor:: Tooltips 
-- [ ] ~/editor:: Frame deleting
+- [ ] ~/editor:: Object hover
+- [x~] ~/editor:: Frame deleting
 - [x] ~/editor:: Frame adding
+- [ ] ~/editor:: Undo/Redo (+shortcut)
+- [ ] ~/editor:: Copy/Paste/Cut (+shortcut)
 - [ ] ~/editor:: Frame content CRUD
 - [ ] ~/editor:: Text
 - [ ] ~/editor:: Image
@@ -36,8 +45,6 @@
 - [ ] ~/editor:: Force marked elements to be used on all frames
 - [ ] ~/editor:: Layering
 - [ ] ~/editor:: Grouping
-- [ ] ~/editor:: Undo/Redo (+shortcut)
-- [ ] ~/editor:: Copy/Paste/Cut (+shortcut)
 - [ ] ~/editor:: Zoom (+shortcut)
 - [ ] ~/editor:: Save
 - [ ] ~/editor:: Save as template

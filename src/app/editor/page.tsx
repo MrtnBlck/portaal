@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Stage } from "react-konva";
 import { Frame } from "./_components/frame";
+//import { MenuWrapper } from "./_components/menuWrapper";
 import { EditorUI } from "./_components/editor_ui";
 import type { KonvaEventObject } from "konva/lib/Node";
 
@@ -41,16 +42,20 @@ export default function EditorPage() {
   const isDrawing = useRef(false);
   const drawingPositions = useRef<DrawingPositions>({ x: 0, y: 0 });
 
+  // Context menu enable/disable
+  // const [isContextMenuDisabled, setContextMenuDisabled] = useState(false);
+
   const handleStageOnMouseDown = (
     e: KonvaEventObject<MouseEvent | TouchEvent>,
   ) => {
+    console.log("handleStageOnMouseDown");
+    handleContextMenuClosing();
     switch (tool.type) {
       case "move":
         checkDeselect(e);
         break;
       case "frame":
         selectObject(null);
-        console.log("frame tool started drawing");
         const stage = e.target.getStage();
         if (stage) {
           const pos = stage.getRelativePointerPosition();
@@ -63,8 +68,8 @@ export default function EditorPage() {
             const newFrame = {
               id: `frame-${frames.length}`,
               name: `Frame ${frames.length}`,
-              width: 0,
-              height: 0,
+              width: 20,
+              height: 20,
               x: pos.x,
               y: pos.y,
             };
@@ -77,11 +82,17 @@ export default function EditorPage() {
     }
   };
 
+  const handleContextMenuClosing = () => {
+    // Dispatch 'Escape' key event to close context menu
+    const escapeEvent = new KeyboardEvent("keydown", { key: "Escape" });
+    document.dispatchEvent(escapeEvent);
+    //setContextMenuDisabled(true);
+  };
+
   const handleStageOnMouseMove = (
     e: KonvaEventObject<MouseEvent | TouchEvent>,
   ) => {
     if (tool.type === "frame" && isDrawing.current) {
-      console.log("frame tool drawing");
       const stage = e.target.getStage();
       if (stage) {
         const pos = stage.getRelativePointerPosition();
@@ -124,6 +135,8 @@ export default function EditorPage() {
     }
   };
 
+  
+
   // Set stage dimensions on window resize
   useEffect(() => {
     const updateDimensions = () => {
@@ -131,6 +144,13 @@ export default function EditorPage() {
         width: Math.floor(window.innerWidth),
         height: Math.floor(window.innerHeight),
       });
+    };
+
+    const deleteSelectedFrame = () => {
+      if (selectedId) {
+        setFrames(frames.filter((frame) => frame.id !== selectedId));
+        selectObject(null);
+      }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -148,6 +168,9 @@ export default function EditorPage() {
           break;
         case "KeyF":
           setTool({ type: "frame", method: "selected" });
+          break;
+        case "Delete":
+          deleteSelectedFrame();
           break;
         default:
           break;
@@ -184,12 +207,17 @@ export default function EditorPage() {
       }
     };
 
+    /* const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    }; */
+
     updateDimensions(); // Set initial dimensions
     window.addEventListener("resize", updateDimensions);
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
     window.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("mouseup", handleMouseUp);
+    //window.addEventListener("contextmenu", handleContextMenu);
 
     return () => {
       window.removeEventListener("resize", updateDimensions);
@@ -197,13 +225,18 @@ export default function EditorPage() {
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mouseup", handleMouseUp);
+      //window.removeEventListener("contextmenu", handleContextMenu);
     };
-  }, [tool, mouseButton]);
+  }, [tool, mouseButton, frames, selectedId]);
 
   if (dimensions.width === 0 || dimensions.height === 0) {
     return null; // Render nothing until dimensions are set
   }
 
+  {
+    /* <MenuWrapper deleteItem={deleteSelectedFrame} isDisabled={isContextMenuDisabled}>
+    </MenuWrapper> */
+  }
   return (
     <div className="relative h-full w-full">
       <Stage
