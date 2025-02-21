@@ -7,18 +7,17 @@ import {
 
 interface MenuWrapperProps {
   children: React.ReactNode;
-  deleteItem: () => void;
-  isDisabled: boolean;
+  deleteItem?: () => void;
+  isDisabled?: boolean;
 }
 
 export function MenuWrapper({
   children,
   deleteItem,
-  isDisabled,
 }: MenuWrapperProps) {
   return (
     <ContextMenu>
-      <ContextMenuTrigger disabled={isDisabled}>{children}</ContextMenuTrigger>
+      <ContextMenuTrigger disabled={true}>{children}</ContextMenuTrigger>
       <ContextMenuContent>
         <ContextMenuItem onSelect={deleteItem}>Delete</ContextMenuItem>
       </ContextMenuContent>

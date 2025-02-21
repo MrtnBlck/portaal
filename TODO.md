@@ -36,6 +36,7 @@
 - [x~] ~/editor:: Frame deleting
 - [x] ~/editor:: Frame adding
 - [ ] ~/editor:: Undo/Redo (+shortcut)
+- [ ] ~/editor:: Zoom (+shortcut)
 - [ ] ~/editor:: Copy/Paste/Cut (+shortcut)
 - [ ] ~/editor:: Frame content CRUD
 - [ ] ~/editor:: Text
@@ -45,7 +46,6 @@
 - [ ] ~/editor:: Force marked elements to be used on all frames
 - [ ] ~/editor:: Layering
 - [ ] ~/editor:: Grouping
-- [ ] ~/editor:: Zoom (+shortcut)
 - [ ] ~/editor:: Save
 - [ ] ~/editor:: Save as template
 - [ ] ~/editor:: Export

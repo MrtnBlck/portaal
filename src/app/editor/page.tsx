@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Stage } from "react-konva";
 import { Frame } from "./_components/frame";
-//import { MenuWrapper } from "./_components/menuWrapper";
+import { MenuWrapper } from "./_components/menuWrapper";
 import { EditorUI } from "./_components/editor_ui";
 import type { KonvaEventObject } from "konva/lib/Node";
 
@@ -89,7 +89,7 @@ export default function EditorPage() {
     //setContextMenuDisabled(true);
   };
 
-  const handleStageOnMouseMove = (
+  const  handleStageOnMouseMove = (
     e: KonvaEventObject<MouseEvent | TouchEvent>,
   ) => {
     if (tool.type === "frame" && isDrawing.current) {
@@ -135,7 +135,33 @@ export default function EditorPage() {
     }
   };
 
-  
+  const zoomStage = (e: KonvaEventObject<WheelEvent>, scale: number) => {
+    const stage = e.target.getStage();
+    if (!stage) return;
+    const oldScale = stage.scaleX();
+    const pointer = stage.getPointerPosition();
+    if (!pointer) return;
+    const mousePointTo = {
+      x: (pointer.x - stage.x()) / oldScale,
+      y: (pointer.y - stage.y()) / oldScale,
+    };
+    // scaleBy: 1.1
+    const newScale = e.evt.deltaY < 0 ? oldScale * scale : oldScale / scale;
+    stage.scale({ x: newScale, y: newScale });
+    const newPos = {
+      x: pointer.x - mousePointTo.x * newScale,
+      y: pointer.y - mousePointTo.y * newScale,
+    };
+    stage.position(newPos);
+    stage.batchDraw();
+  }
+
+  function onScroll(e: KonvaEventObject<WheelEvent>) {
+    e.evt.preventDefault();
+    if(e.evt.ctrlKey){
+      zoomStage(e, 1.1);
+    }
+  }
 
   // Set stage dimensions on window resize
   useEffect(() => {
@@ -233,50 +259,49 @@ export default function EditorPage() {
     return null; // Render nothing until dimensions are set
   }
 
-  {
-    /* <MenuWrapper deleteItem={deleteSelectedFrame} isDisabled={isContextMenuDisabled}>
-    </MenuWrapper> */
-  }
   return (
-    <div className="relative h-full w-full">
-      <Stage
-        width={dimensions.width}
-        height={dimensions.height}
-        draggable={tool.type === "hand"}
-        className="bg-[#1A1A1A]"
-        onMouseDown={handleStageOnMouseDown}
-        onTouchStart={handleStageOnMouseDown}
-        onMouseMove={handleStageOnMouseMove}
-        onTouchMove={handleStageOnMouseMove}
-        onMouseUp={handleStageOnMouseUp}
-        onTouchEnd={handleStageOnMouseUp}
-        style={{
-          cursor:
-            tool.type === "hand"
-              ? "grab"
-              : tool.type === "move"
-                ? "default"
-                : "crosshair",
-        }}
-      >
-        {frames.map((frameData, i) => {
-          return (
-            <Frame
-              data={frameData}
-              key={i}
-              onSelect={() => {
-                if (tool.type === "move") selectObject(frameData.id);
-              }}
-              isSelected={selectedId === frameData.id}
-              draggable={tool.type === "move"}
-            />
-          );
-        })}
-      </Stage>
-      <EditorUI
-        tool={tool.type}
-        selectTool={(e) => setTool({ type: e, method: "selected" })}
-      />
-    </div>
+    <MenuWrapper>
+      <div className="relative h-full w-full">
+        <Stage
+          width={dimensions.width}
+          height={dimensions.height}
+          draggable={tool.type === "hand"}
+          className="bg-[#1A1A1A]"
+          onMouseDown={handleStageOnMouseDown}
+          onTouchStart={handleStageOnMouseDown}
+          onMouseMove={handleStageOnMouseMove}
+          onTouchMove={handleStageOnMouseMove}
+          onWheel={onScroll}
+          onMouseUp={handleStageOnMouseUp}
+          onTouchEnd={handleStageOnMouseUp}
+          style={{
+            cursor:
+              tool.type === "hand"
+                ? "grab"
+                : tool.type === "move"
+                  ? "default"
+                  : "crosshair",
+          }}
+        >
+          {frames.map((frameData, i) => {
+            return (
+              <Frame
+                data={frameData}
+                key={i}
+                onSelect={() => {
+                  if (tool.type === "move") selectObject(frameData.id);
+                }}
+                isSelected={selectedId === frameData.id}
+                draggable={tool.type === "move"}
+              />
+            );
+          })}
+        </Stage>
+        <EditorUI
+          tool={tool.type}
+          selectTool={(e) => setTool({ type: e, method: "selected" })}
+        />
+      </div>
+    </MenuWrapper>
   );
 }
