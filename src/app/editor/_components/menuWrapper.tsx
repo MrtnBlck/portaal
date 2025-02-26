@@ -11,10 +11,7 @@ interface MenuWrapperProps {
   isDisabled?: boolean;
 }
 
-export function MenuWrapper({
-  children,
-  deleteItem,
-}: MenuWrapperProps) {
+export function MenuWrapper({ children, deleteItem }: MenuWrapperProps) {
   return (
     <ContextMenu>
       <ContextMenuTrigger disabled={true}>{children}</ContextMenuTrigger>

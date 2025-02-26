@@ -36,7 +36,7 @@
 - [x~] ~/editor:: Frame deleting
 - [x] ~/editor:: Frame adding
 - [ ] ~/editor:: Undo/Redo (+shortcut)
-- [ ] ~/editor:: Zoom (+shortcut)
+- [x] ~/editor:: Zoom (+shortcut)
 - [ ] ~/editor:: Copy/Paste/Cut (+shortcut)
 - [ ] ~/editor:: Frame content CRUD
 - [ ] ~/editor:: Text

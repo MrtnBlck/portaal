@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Stage } from "react-konva";
 import { Frame } from "./_components/frame";
 import { MenuWrapper } from "./_components/menuWrapper";
-import { EditorUI } from "./_components/editor_ui";
+import { EditorUI } from "./_components/editorUI";
 import type { KonvaEventObject } from "konva/lib/Node";
 
 type ToolState = {
@@ -42,13 +42,15 @@ export default function EditorPage() {
   const isDrawing = useRef(false);
   const drawingPositions = useRef<DrawingPositions>({ x: 0, y: 0 });
 
+  // Zoom states
+  const [stageScale, setStageScale] = useState(1);
+
   // Context menu enable/disable
   // const [isContextMenuDisabled, setContextMenuDisabled] = useState(false);
 
   const handleStageOnMouseDown = (
     e: KonvaEventObject<MouseEvent | TouchEvent>,
   ) => {
-    console.log("handleStageOnMouseDown");
     handleContextMenuClosing();
     switch (tool.type) {
       case "move":
@@ -89,7 +91,7 @@ export default function EditorPage() {
     //setContextMenuDisabled(true);
   };
 
-  const  handleStageOnMouseMove = (
+  const handleStageOnMouseMove = (
     e: KonvaEventObject<MouseEvent | TouchEvent>,
   ) => {
     if (tool.type === "frame" && isDrawing.current) {
@@ -146,19 +148,20 @@ export default function EditorPage() {
       y: (pointer.y - stage.y()) / oldScale,
     };
     // scaleBy: 1.1
-    const newScale = e.evt.deltaY < 0 ? oldScale * scale : oldScale / scale;
+    const newScale = Math.min(Math.max(Math.floor((e.evt.deltaY < 0 ? oldScale * scale : oldScale / scale) * 100) / 100, 0.1), 9.99);
     stage.scale({ x: newScale, y: newScale });
+    setStageScale(newScale);
     const newPos = {
       x: pointer.x - mousePointTo.x * newScale,
       y: pointer.y - mousePointTo.y * newScale,
     };
     stage.position(newPos);
     stage.batchDraw();
-  }
+  };
 
   function onScroll(e: KonvaEventObject<WheelEvent>) {
     e.evt.preventDefault();
-    if(e.evt.ctrlKey){
+    if (e.evt.ctrlKey) {
       zoomStage(e, 1.1);
     }
   }
@@ -233,16 +236,23 @@ export default function EditorPage() {
       }
     };
 
+    const handleWheel = (event: WheelEvent) => {
+      if (event.ctrlKey) {
+        event.preventDefault();
+      }
+    };
+
     /* const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
     }; */
-
+    
     updateDimensions(); // Set initial dimensions
     window.addEventListener("resize", updateDimensions);
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
     window.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener('wheel', handleWheel, { passive: false });
     //window.addEventListener("contextmenu", handleContextMenu);
 
     return () => {
@@ -251,6 +261,7 @@ export default function EditorPage() {
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener('wheel', handleWheel);
       //window.removeEventListener("contextmenu", handleContextMenu);
     };
   }, [tool, mouseButton, frames, selectedId]);
@@ -282,6 +293,7 @@ export default function EditorPage() {
                   ? "default"
                   : "crosshair",
           }}
+          scale={{ x: stageScale, y: stageScale }}
         >
           {frames.map((frameData, i) => {
             return (
@@ -293,13 +305,16 @@ export default function EditorPage() {
                 }}
                 isSelected={selectedId === frameData.id}
                 draggable={tool.type === "move"}
+                stageScale={stageScale}
               />
             );
           })}
         </Stage>
         <EditorUI
           tool={tool.type}
-          selectTool={(e) => setTool({ type: e, method: "selected" })}
+          setTool={(tool) => setTool({ type: tool, method: "selected" })}
+          stageScale={stageScale}
+          setStageScale={(scale) => setStageScale(scale)}
         />
       </div>
     </MenuWrapper>

@@ -28,6 +28,7 @@ interface FrameProps {
   isSelected: boolean;
   draggable: boolean;
   children?: React.ReactNode;
+  stageScale: number;
 }
 
 function FrameRect({
@@ -114,11 +115,12 @@ function FrameRect({
   );
 }
 
-export function Frame({ data, onSelect, isSelected, draggable, children }: FrameProps) {
+export function Frame({ data, onSelect, isSelected, draggable, children, stageScale }: FrameProps) {
   const [frameData, setFrameData] = useState(data);
+  const inverseScale = 1 / stageScale;
   return (
     <Layer draggable={draggable} onDragStart={onSelect}>
-      <Text text={frameData.name} fill={isSelected ? "#70AFDC" : "#979797"} x={frameData.x} y={frameData.y-20} />
+      <Text text={frameData.name} fill={isSelected ? "#70AFDC" : "#979797"} x={frameData.x} y={frameData.y-20*inverseScale} scale={{x: inverseScale, y: inverseScale}}/>
       <FrameRect data={frameData} isSelected={isSelected} onSelect={onSelect} setData={(e) => setFrameData(e)} />
       {children}
     </Layer>
