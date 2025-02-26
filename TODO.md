@@ -3,8 +3,8 @@
 ## Larger tasks
 
 - [x] Deploy
-- [~] Basic UI Scaffold
-- [ ] Fix vercel build
+- [x] Basic UI Scaffold
+- [x] Fix vercel build
 - [ ] Database stuff
 - [ ] Authentication
 - [ ] Routing
@@ -18,7 +18,6 @@
 
 ## Problems
 
-- [ ] Context menu closing (solved by firing esc key).
 - [ ] Frame id duplication, delete problem
 
 ## Features Categorized by Importance Level
@@ -27,13 +26,13 @@
 
 - [ ] Landing page
 - [x] ~/editor:: basic functionality
-- [~] ~/editor:: Frames
+- [x] ~/editor:: Frames
 - [x] ~/editor:: Frame resizing
 - [x] ~/editor:: Frame moving
-- [x~] ~/editor:: Move/Hand tool (+shortcut)
-- [x~] ~/editor:: Tooltips 
+- [x] ~/editor:: Move/Hand tool (+shortcut)
+- [x] ~/editor:: Tooltips 
 - [ ] ~/editor:: Object hover
-- [x~] ~/editor:: Frame deleting
+- [~] ~/editor:: Frame deleting
 - [x] ~/editor:: Frame adding
 - [ ] ~/editor:: Undo/Redo (+shortcut)
 - [x] ~/editor:: Zoom (+shortcut)

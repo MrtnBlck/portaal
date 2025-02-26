@@ -30,8 +30,12 @@ export function ActionBar({ stageScale, setStageScale }: ActionBarProps) {
       //remove percentage sign
       value = value.replace("%", "");
     }
-    const newValue = Math.min(Math.max(parseInt(value), 10), 999);
-    setStageScale(newValue / 100);    
+    if (value !== "") {
+      const newValue = Math.min(Math.max(parseInt(value), 10), 999);
+      setStageScale(newValue / 100);    
+    } else {
+      setStageScaleInput(`${Math.round(stageScale * 100)}%`)
+    }
   };
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
