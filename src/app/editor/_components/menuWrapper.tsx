@@ -5,18 +5,29 @@ import {
   ContextMenuTrigger,
 } from "~/components/ui/context-menu";
 
+import type { ObjectData } from "../page";
+
 interface MenuWrapperProps {
   children: React.ReactNode;
-  deleteItem?: () => void;
-  isDisabled?: boolean;
+  deleteObject: () => void;
+  selectedObject: ObjectData | null;
 }
 
-export function MenuWrapper({ children, deleteItem }: MenuWrapperProps) {
+export function MenuWrapper({
+  children,
+  deleteObject,
+  selectedObject,
+}: MenuWrapperProps) {
   return (
     <ContextMenu>
-      <ContextMenuTrigger disabled={true}>{children}</ContextMenuTrigger>
+      <ContextMenuTrigger disabled={false}>{children}</ContextMenuTrigger>
       <ContextMenuContent>
-        <ContextMenuItem onSelect={deleteItem}>Delete</ContextMenuItem>
+        <ContextMenuItem>Context menu, content TBD</ContextMenuItem>
+        {selectedObject && (
+          <ContextMenuItem onSelect={deleteObject}>
+            Delete: {selectedObject.name}
+          </ContextMenuItem>
+        )}
       </ContextMenuContent>
     </ContextMenu>
   );

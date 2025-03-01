@@ -18,7 +18,7 @@
 
 ## Problems
 
-- [ ] Frame id duplication, delete problem
+- [ ] Fix context menu weird behavior
 
 ## Features Categorized by Importance Level
 

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Stage } from "react-konva";
 import { Frame } from "./_components/frame";
 import { MenuWrapper } from "./_components/menuWrapper";
 import { EditorUI } from "./_components/editorUI";
 import type { KonvaEventObject } from "konva/lib/Node";
+import { v4 as uuidv4 } from "uuid";
 
 type ToolState = {
   type: "move" | "hand" | "frame";
@@ -17,20 +18,33 @@ type DrawingPositions = {
   y: number;
 };
 
+type ObjectType = "Frame" | "Image" | "Text" | "Shape" | "Group";
+
+export interface ObjectData {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+  type: ObjectType;
+}
+
 const initialFrames = [
   {
-    id: "frame-0",
+    id: uuidv4(),
     name: "Frame 0",
     width: 100,
     height: 300,
     x: 300,
     y: 300,
+    type: "Frame" as ObjectType,
   },
 ];
 
 export default function EditorPage() {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const [selectedId, selectObject] = useState<string | null>(null);
+  const [selectedObject, setSelectedObject] = useState<ObjectData | null>(null);
   const [tool, setTool] = useState<ToolState>({
     type: "move",
     method: "selected",
@@ -38,7 +52,7 @@ export default function EditorPage() {
   const [mouseButton, setMouseButton] = useState<number | null>(null);
 
   // Frame drawing states
-  const [frames, setFrames] = useState(initialFrames);
+  const [frames, setFrames] = useState<ObjectData[]>(initialFrames);
   const isDrawing = useRef(false);
   const drawingPositions = useRef<DrawingPositions>({ x: 0, y: 0 });
 
@@ -51,13 +65,13 @@ export default function EditorPage() {
   const handleStageOnMouseDown = (
     e: KonvaEventObject<MouseEvent | TouchEvent>,
   ) => {
-    handleContextMenuClosing();
+    //handleContextMenuClosing();
     switch (tool.type) {
       case "move":
         checkDeselect(e);
         break;
       case "frame":
-        selectObject(null);
+        setSelectedObject(null);
         const stage = e.target.getStage();
         if (stage) {
           const pos = stage.getRelativePointerPosition();
@@ -67,13 +81,14 @@ export default function EditorPage() {
               x: pos.x,
               y: pos.y,
             };
-            const newFrame = {
-              id: `frame-${frames.length}`,
+            const newFrame: ObjectData = {
+              id: uuidv4(),
               name: `Frame ${frames.length}`,
               width: 20,
               height: 20,
               x: pos.x,
               y: pos.y,
+              type: "Frame" as ObjectType,
             };
             setFrames([...frames, newFrame]);
           }
@@ -84,12 +99,12 @@ export default function EditorPage() {
     }
   };
 
-  const handleContextMenuClosing = () => {
+/*   const handleContextMenuClosing = () => {
     // Dispatch 'Escape' key event to close context menu
     const escapeEvent = new KeyboardEvent("keydown", { key: "Escape" });
     document.dispatchEvent(escapeEvent);
     //setContextMenuDisabled(true);
-  };
+  }; */
 
   const handleStageOnMouseMove = (
     e: KonvaEventObject<MouseEvent | TouchEvent>,
@@ -117,13 +132,14 @@ export default function EditorPage() {
     }
   };
 
+  // TODO:
   const handleStageOnMouseUp = () => {
     if (tool.type === "frame" && isDrawing.current) {
       isDrawing.current = false;
       const newFrames = [...frames];
       const newFrame = newFrames[newFrames.length - 1];
       if (newFrame) {
-        selectObject(newFrame.id);
+        setSelectedObject(newFrame);
       }
     }
   };
@@ -133,7 +149,7 @@ export default function EditorPage() {
     // deselect when clicked on empty area
     const clickedOnEmpty = e.target === e.target.getStage();
     if (clickedOnEmpty) {
-      selectObject(null);
+      setSelectedObject(null);
     }
   };
 
@@ -148,7 +164,15 @@ export default function EditorPage() {
       y: (pointer.y - stage.y()) / oldScale,
     };
     // scaleBy: 1.1
-    const newScale = Math.min(Math.max(Math.floor((e.evt.deltaY < 0 ? oldScale * scale : oldScale / scale) * 100) / 100, 0.1), 9.99);
+    const newScale = Math.min(
+      Math.max(
+        Math.floor(
+          (e.evt.deltaY < 0 ? oldScale * scale : oldScale / scale) * 100,
+        ) / 100,
+        0.1,
+      ),
+      9.99,
+    );
     stage.scale({ x: newScale, y: newScale });
     setStageScale(newScale);
     const newPos = {
@@ -166,6 +190,27 @@ export default function EditorPage() {
     }
   }
 
+  const deleteSelectedObject = useCallback(() => {
+    if (selectedObject) {
+      switch (selectedObject.type) {
+        case "Frame":
+          setFrames(frames.filter((frame) => frame.id !== selectedObject.id));
+          break;
+        case "Image":
+          break;
+        case "Text":
+          break;
+        case "Shape":
+          break;
+        case "Group":
+          break;
+        default:
+          break;
+      }
+      setSelectedObject(null);
+    }
+  }, [selectedObject, frames]);
+
   // Set stage dimensions on window resize
   useEffect(() => {
     const updateDimensions = () => {
@@ -173,13 +218,6 @@ export default function EditorPage() {
         width: Math.floor(window.innerWidth),
         height: Math.floor(window.innerHeight),
       });
-    };
-
-    const deleteSelectedFrame = () => {
-      if (selectedId) {
-        setFrames(frames.filter((frame) => frame.id !== selectedId));
-        selectObject(null);
-      }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -199,7 +237,7 @@ export default function EditorPage() {
           setTool({ type: "frame", method: "selected" });
           break;
         case "Delete":
-          deleteSelectedFrame();
+          deleteSelectedObject();
           break;
         default:
           break;
@@ -242,18 +280,18 @@ export default function EditorPage() {
       }
     };
 
-    /* const handleContextMenu = (e: MouseEvent) => {
+    const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
-    }; */
-    
+    };
+
     updateDimensions(); // Set initial dimensions
     window.addEventListener("resize", updateDimensions);
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
     window.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("mouseup", handleMouseUp);
-    window.addEventListener('wheel', handleWheel, { passive: false });
-    //window.addEventListener("contextmenu", handleContextMenu);
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    window.addEventListener("contextmenu", handleContextMenu);
 
     return () => {
       window.removeEventListener("resize", updateDimensions);
@@ -261,17 +299,17 @@ export default function EditorPage() {
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mouseup", handleMouseUp);
-      window.removeEventListener('wheel', handleWheel);
-      //window.removeEventListener("contextmenu", handleContextMenu);
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("contextmenu", handleContextMenu);
     };
-  }, [tool, mouseButton, frames, selectedId]);
+  }, [tool, mouseButton, frames, selectedObject, deleteSelectedObject]);
 
   if (dimensions.width === 0 || dimensions.height === 0) {
     return null; // Render nothing until dimensions are set
   }
 
   return (
-    <MenuWrapper>
+    <MenuWrapper selectedObject={selectedObject} deleteObject={deleteSelectedObject}>
       <div className="relative h-full w-full">
         <Stage
           width={dimensions.width}
@@ -295,15 +333,15 @@ export default function EditorPage() {
           }}
           scale={{ x: stageScale, y: stageScale }}
         >
-          {frames.map((frameData, i) => {
+          {frames.map((frameData) => {
             return (
               <Frame
                 data={frameData}
-                key={i}
+                key={frameData.id}
                 onSelect={() => {
-                  if (tool.type === "move") selectObject(frameData.id);
+                  if (tool.type === "move") setSelectedObject(frameData);
                 }}
-                isSelected={selectedId === frameData.id}
+                isSelected={selectedObject === frameData}
                 draggable={tool.type === "move"}
                 stageScale={stageScale}
               />
@@ -315,6 +353,9 @@ export default function EditorPage() {
           setTool={(tool) => setTool({ type: tool, method: "selected" })}
           stageScale={stageScale}
           setStageScale={(scale) => setStageScale(scale)}
+          frames={frames}
+          selectedObject={selectedObject}
+          setSelectedObject={(e) => setSelectedObject(e)}
         />
       </div>
     </MenuWrapper>
