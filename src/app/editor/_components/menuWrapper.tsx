@@ -19,7 +19,7 @@ export function MenuWrapper({
   selectedObject,
 }: MenuWrapperProps) {
   return (
-    <ContextMenu>
+    <ContextMenu modal={false}>
       <ContextMenuTrigger disabled={false}>{children}</ContextMenuTrigger>
       <ContextMenuContent>
         <ContextMenuItem>Context menu, content TBD</ContextMenuItem>

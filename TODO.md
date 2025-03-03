@@ -18,7 +18,14 @@
 
 ## Problems
 
-- [ ] Fix context menu weird behavior
+- [ ] Context menu separation for canvas & UI
+- [ ] Fix multiple percentage signs in zoom input
+- [ ] Resize UI update
+
+## Look into
+
+- Jotai --> Global state management
+- Zustand --> nagy adatbol megmondani, hogy mit updateljen
 
 ## Features Categorized by Importance Level
 
@@ -32,7 +39,7 @@
 - [x] ~/editor:: Move/Hand tool (+shortcut)
 - [x] ~/editor:: Tooltips 
 - [ ] ~/editor:: Object hover
-- [~] ~/editor:: Frame deleting
+- [x] ~/editor:: Frame deleting
 - [x] ~/editor:: Frame adding
 - [ ] ~/editor:: Undo/Redo (+shortcut)
 - [x] ~/editor:: Zoom (+shortcut)

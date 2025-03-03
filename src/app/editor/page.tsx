@@ -99,7 +99,7 @@ export default function EditorPage() {
     }
   };
 
-/*   const handleContextMenuClosing = () => {
+  /*   const handleContextMenuClosing = () => {
     // Dispatch 'Escape' key event to close context menu
     const escapeEvent = new KeyboardEvent("keydown", { key: "Escape" });
     document.dispatchEvent(escapeEvent);
@@ -123,8 +123,8 @@ export default function EditorPage() {
             const y2 = pos.y;
             newFrame.x = Math.min(x1, x2);
             newFrame.y = Math.min(y1, y2);
-            newFrame.width = Math.abs(x2 - x1);
-            newFrame.height = Math.abs(y2 - y1);
+            newFrame.width = Math.floor(Math.abs(x2 - x1));
+            newFrame.height = Math.floor(Math.abs(y2 - y1));
             setFrames(newFrames);
           }
         }
@@ -132,7 +132,6 @@ export default function EditorPage() {
     }
   };
 
-  // TODO:
   const handleStageOnMouseUp = () => {
     if (tool.type === "frame" && isDrawing.current) {
       isDrawing.current = false;
@@ -308,8 +307,21 @@ export default function EditorPage() {
     return null; // Render nothing until dimensions are set
   }
 
+  // Function to update only one specific frame from the frames array
+  const updateFrame = (frame : ObjectData) => {
+    const currentFrameIndex = frames.findIndex((f) => f.id === frame.id);
+    const framesBeforeCurrentFrame = frames.slice(0, currentFrameIndex);
+    const framesAfterCurrentFrame = frames.slice(currentFrameIndex+1);
+    const newFrames = [...framesBeforeCurrentFrame, frame, ...framesAfterCurrentFrame];
+    setFrames(newFrames);
+  };
+  
+
   return (
-    <MenuWrapper selectedObject={selectedObject} deleteObject={deleteSelectedObject}>
+    <MenuWrapper
+      selectedObject={selectedObject}
+      deleteObject={deleteSelectedObject}
+    >
       <div className="relative h-full w-full">
         <Stage
           width={dimensions.width}
@@ -338,12 +350,13 @@ export default function EditorPage() {
               <Frame
                 data={frameData}
                 key={frameData.id}
-                onSelect={() => {
-                  if (tool.type === "move") setSelectedObject(frameData);
+                onSelect={(e) => {
+                  if (tool.type === "move") setSelectedObject(e);
                 }}
-                isSelected={selectedObject === frameData}
+                isSelected={selectedObject?.id === frameData.id}
                 draggable={tool.type === "move"}
                 stageScale={stageScale}
+                updateFrame={(e: ObjectData) => updateFrame(e)}
               />
             );
           })}

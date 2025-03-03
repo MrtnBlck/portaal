@@ -15,19 +15,23 @@ export function PropertiesPanel({ selectedObject }: propertiesPanelProps) {
           <div className="px-3 pb-2 text-xs font-semibold">Position</div>
           <div className="flex gap-1.5 px-2.5">
             <div className="w-full rounded-sm bg-white bg-opacity-5 px-2.5 py-1 text-xs font-extralight">
-              <span className="pr-2 font-medium">X</span>{selectedObject.x}
+              <span className="pr-2 font-medium">X</span>
+              {selectedObject.x}
             </div>
             <div className="w-full rounded-sm bg-white bg-opacity-5 px-2.5 py-1 text-xs font-extralight">
-              <span className="pr-2 font-medium">Y</span>{selectedObject.y}
+              <span className="pr-2 font-medium">Y</span>
+              {selectedObject.y}
             </div>
           </div>
           <div className="px-3 pb-2 pt-3 text-xs font-semibold">Layout</div>
           <div className="flex gap-1.5 px-2.5">
             <div className="w-full rounded-sm bg-white bg-opacity-5 px-2.5 py-1 text-xs font-extralight">
-              <span className="pr-2 font-medium">W</span>{selectedObject.width}
+              <span className="pr-2 font-medium">W</span>
+              {selectedObject.width}
             </div>
             <div className="w-full rounded-sm bg-white bg-opacity-5 px-2.5 py-1 text-xs font-extralight">
-              <span className="pr-2 font-medium">H</span>{selectedObject.height}
+              <span className="pr-2 font-medium">H</span>
+              {selectedObject.height}
             </div>
           </div>
         </>

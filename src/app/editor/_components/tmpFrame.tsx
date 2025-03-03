@@ -8,15 +8,14 @@ import type { ObjectData } from "../page";
 interface RectProps {
   data: ObjectData;
   fill?: string;
-  onSelect: (e: ObjectData) => void;
+  onSelect: () => void;
   isSelected: boolean;
-  setData: (e: ObjectData) => void;
   updateFrame: (e: ObjectData) => void;
 }
 
 interface FrameProps {
   data: ObjectData;
-  onSelect: (e: ObjectData) => void;
+  onSelect: () => void;
   isSelected: boolean;
   draggable: boolean;
   children?: React.ReactNode;
@@ -29,8 +28,7 @@ function FrameRect({
   fill = "#FFFFFF",
   onSelect,
   isSelected,
-  setData,
-  updateFrame
+  updateFrame,
 }: RectProps) {
   const shapeRef = useRef<Konva.Rect>(null);
   const trRef = useRef<Konva.Transformer>(null);
@@ -51,8 +49,8 @@ function FrameRect({
         width={data.width}
         height={data.height}
         fill={fill}
-        onClick={() => onSelect(data)}
-        onTap={() => onSelect(data)}
+        onClick={onSelect}
+        onTap={onSelect}
         ref={shapeRef}
         onTransformEnd={() => {
           const node = shapeRef.current;
@@ -62,23 +60,17 @@ function FrameRect({
             const scaleY = node.scaleY();
 
             const size = {
-              width: Math.round(Math.max(5, node.width() * scaleX)),
-              height: Math.round(Math.max(5, node.height() * scaleY)),
+              width: Math.max(5, node.width() * scaleX),
+              height: Math.max(5, node.height() * scaleY),
             };
 
             shapeRef.current?.setSize(size);
             node.scaleX(1);
             node.scaleY(1);
-            setData({
-              ...data,
-              x: Math.round(node.x()),
-              y: Math.round(node.y()),
-              ...size,
-            });
             updateFrame({
               ...data,
-              x: Math.round(node.x()),
-              y: Math.round(node.y()),
+              x: node.x(),
+              y: node.y(),
               ...size,
             });
           }
@@ -88,10 +80,10 @@ function FrameRect({
           // TODO: limit property updates
           // TODO: only update X,Y, do not overrite other properties
           if (node) {
-            setData({
+            updateFrame({
               ...data,
-              x: Math.round(node.x()),
-              y: Math.round(node.y()),
+              x: node.x(),
+              y: node.y(),
             });
           }
         }}
@@ -122,26 +114,24 @@ export function Frame({
   draggable,
   children,
   stageScale,
-  updateFrame
+  updateFrame,
 }: FrameProps) {
-  const [ObjectData, setObjectData] = useState(data);
   const inverseScale = 1 / stageScale;
   return (
-    <Layer draggable={draggable} onDragStart={() => onSelect(ObjectData)}>
+    <Layer draggable={draggable} onDragStart={onSelect}>
       <Text
-        text={ObjectData.name}
+        text={data.name}
         fill={isSelected ? "#70AFDC" : "#979797"}
-        x={ObjectData.x}
-        y={ObjectData.y - 20 * inverseScale}
+        x={data.x}
+        y={data.y - 20 * inverseScale}
         scale={{ x: inverseScale, y: inverseScale }}
-        onClick={() => onSelect(ObjectData)}
-        onTap={() => onSelect(ObjectData)}
+        onClick={onSelect}
+        onTap={onSelect}
       />
       <FrameRect
-        data={ObjectData}
+        data={data}
         isSelected={isSelected}
-        onSelect={() => onSelect(ObjectData)}
-        setData={(e) => setObjectData(e)}
+        onSelect={onSelect}
         updateFrame={(e) => updateFrame(e)}
       />
       {children}
