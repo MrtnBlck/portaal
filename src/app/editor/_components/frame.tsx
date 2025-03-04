@@ -1,27 +1,23 @@
 "use client";
 
 import { Layer, Rect, Text, Transformer } from "react-konva";
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState } from "react";
 import type Konva from "konva";
 import type { ObjectData } from "../page";
 
-interface RectProps {
-  frame: ObjectData;
-  fill?: string;
-  setSelectedObject: () => void;
-  isSelected: boolean;
+interface RectProps extends Omit<FrameProps, "stageScale" | "children"> {
   setData: (e: ObjectData) => void;
-  updateFrame: (e: ObjectData) => void;
+  fill?: string;
 }
 
 interface FrameProps {
   frame: ObjectData;
   setSelectedObject: () => void;
   isSelected: boolean;
-  draggable: boolean;
-  children?: React.ReactNode;
-  stageScale: number;
   updateFrame: (e: ObjectData) => void;
+  draggable: boolean;
+  stageScale: number;
+  children?: React.ReactNode;
 }
 
 function FrameRect({
@@ -31,6 +27,7 @@ function FrameRect({
   isSelected,
   setData,
   updateFrame,
+  draggable,
 }: RectProps) {
   const shapeRef = useRef<Konva.Rect>(null);
   const trRef = useRef<Konva.Transformer>(null);
@@ -53,7 +50,34 @@ function FrameRect({
         fill={fill}
         onClick={() => setSelectedObject()}
         onTap={() => setSelectedObject()}
+        onDragStart={() => setSelectedObject()}
+        draggable={draggable}
         ref={shapeRef}
+        onDragEnd={() => {
+          const node = shapeRef.current;
+          if (node) {
+            setData({
+              ...frame,
+              x: Math.round(node.x()),
+              y: Math.round(node.y()),
+            });
+            updateFrame({
+              ...frame,
+              x: Math.round(node.x()),
+              y: Math.round(node.y()),
+            });
+          }
+        }}
+        onDragMove={() => {
+          const node = shapeRef.current;
+          if (node) {
+            setData({
+              ...frame,
+              x: Math.round(node.x()),
+              y: Math.round(node.y()),
+            });
+          }
+        }}
         onTransformEnd={() => {
           const node = shapeRef.current;
           if (node) {
@@ -140,7 +164,7 @@ export function Frame({
   }, [frameState]);
 
   return (
-    <Layer draggable={draggable} onDragStart={() => setSelectedObject()}>
+    <Layer>
       <Text
         text={frameState.name}
         fill={isSelected ? "#70AFDC" : "#979797"}
@@ -156,6 +180,7 @@ export function Frame({
         setSelectedObject={() => setSelectedObject()}
         setData={(e) => setFrameState(e)}
         updateFrame={(e) => updateFrame(e)}
+        draggable={draggable}
       />
       {children}
     </Layer>

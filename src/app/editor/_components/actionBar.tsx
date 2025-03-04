@@ -40,7 +40,7 @@ export function ActionBar({ stageScale, setStageScale }: ActionBarProps) {
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    const regex = /^[0-9%]*$/;
+    const regex = /^(?:[0-9]*%?)$/;
     if (regex.test(value)) {
       setStageScaleInput(value);
     }

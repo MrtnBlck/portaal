@@ -76,7 +76,7 @@
 
 @layer components {
   .sidepanel {
-    @apply rounded-lg border border-neutral-800 bg-[#1F1F1FEB] px-0.5 pb-2.5 text-white shadow-[0px_0px_5px_4px_rgba(0,_0,_0,_0.05)] backdrop-blur-lg;
+    @apply rounded-lg border border-neutral-800 bg-[#1F1F1FEB] px-0.5 pb-2.5 text-white shadow-[0px_0px_5px_4px_rgba(0,_0,_0,_0.05)] backdrop-blur-lg pointer-events-auto;
   }
 }
 

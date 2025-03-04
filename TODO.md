@@ -19,9 +19,8 @@
 ## Problems
 
 - [ ] Context menu separation for canvas & UI
-- [ ] Fix multiple percentage signs in zoom input
 - [ ] Multiple states for Frames
-- [ ] Fix x/y UI update
+- [ ] Frame naming
 
 ## Look into
 
@@ -83,6 +82,7 @@
 - [ ] ~/editor:: Typography
 - [ ] ~/editor:: Shapes/Styles
 - [ ] ~/editor:: Color picker
+- [ ] ~/editor:: Selected frame on top
 
 ### Level 3 - Nice to Have
 

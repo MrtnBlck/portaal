@@ -7,8 +7,8 @@ interface propertiesInputProps {
   name: string;
   value: number;
   setValue: (value: number) => void;
-  min: number;
-  max: number;
+  min?: number;
+  max?: number;
 }
 
 export function PropertiesInput({name, value, setValue, min, max}: propertiesInputProps) {
@@ -21,7 +21,12 @@ export function PropertiesInput({name, value, setValue, min, max}: propertiesInp
   const handleOnBlur = () => {
     const value = inputValue;
     if (value !== "") {
-      const newValue = Math.min(Math.max(parseInt(value), min), max);
+      let newValue;
+      if (min !== undefined && max !== undefined) {
+        newValue = Math.min(Math.max(parseInt(value), min), max);
+      } else {
+        newValue = parseInt(value);
+      }
       setValue(newValue);
     } else {
       setInputValue(value.toString());
