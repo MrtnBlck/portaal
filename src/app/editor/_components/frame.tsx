@@ -1,7 +1,7 @@
 "use client";
 
 import { Layer, Rect, Text, Transformer } from "react-konva";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import type Konva from "konva";
 import type { ObjectData } from "../page";
 
@@ -125,15 +125,19 @@ export function Frame({
 }: FrameProps) {
   const [frameState, setFrameState] = useState(frame);
   const inverseScale = 1 / stageScale;
+  const setSelectedObjectRef = useRef(setSelectedObject);
 
   useEffect(() => {
     setFrameState(frame);
   }, [frame]);
 
+  useEffect(() => {
+    setSelectedObjectRef.current = setSelectedObject;
+  }, [setSelectedObject]);
 
   useEffect(() => {
-    setSelectedObject();
-  }, [frameState, setSelectedObject]);
+    setSelectedObjectRef.current();
+  }, [frameState]);
 
   return (
     <Layer draggable={draggable} onDragStart={() => setSelectedObject()}>
