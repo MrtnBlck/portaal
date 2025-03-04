@@ -99,13 +99,6 @@ export default function EditorPage() {
     }
   };
 
-  /*   const handleContextMenuClosing = () => {
-    // Dispatch 'Escape' key event to close context menu
-    const escapeEvent = new KeyboardEvent("keydown", { key: "Escape" });
-    document.dispatchEvent(escapeEvent);
-    //setContextMenuDisabled(true);
-  }; */
-
   const handleStageOnMouseMove = (
     e: KonvaEventObject<MouseEvent | TouchEvent>,
   ) => {
@@ -121,10 +114,10 @@ export default function EditorPage() {
             const y1 = drawingPositions.current.y;
             const x2 = pos.x;
             const y2 = pos.y;
-            newFrame.x = Math.min(x1, x2);
-            newFrame.y = Math.min(y1, y2);
-            newFrame.width = Math.floor(Math.abs(x2 - x1));
-            newFrame.height = Math.floor(Math.abs(y2 - y1));
+            newFrame.x = Math.round(Math.min(x1, x2));
+            newFrame.y = Math.round(Math.min(y1, y2));
+            newFrame.width = Math.round(Math.abs(x2 - x1));
+            newFrame.height = Math.round(Math.abs(y2 - y1));
             setFrames(newFrames);
           }
         }
@@ -308,14 +301,17 @@ export default function EditorPage() {
   }
 
   // Function to update only one specific frame from the frames array
-  const updateFrame = (frame : ObjectData) => {
+  const updateFrame = (frame: ObjectData) => {
     const currentFrameIndex = frames.findIndex((f) => f.id === frame.id);
     const framesBeforeCurrentFrame = frames.slice(0, currentFrameIndex);
-    const framesAfterCurrentFrame = frames.slice(currentFrameIndex+1);
-    const newFrames = [...framesBeforeCurrentFrame, frame, ...framesAfterCurrentFrame];
+    const framesAfterCurrentFrame = frames.slice(currentFrameIndex + 1);
+    const newFrames = [
+      ...framesBeforeCurrentFrame,
+      frame,
+      ...framesAfterCurrentFrame,
+    ];
     setFrames(newFrames);
   };
-  
 
   return (
     <MenuWrapper
@@ -345,15 +341,15 @@ export default function EditorPage() {
           }}
           scale={{ x: stageScale, y: stageScale }}
         >
-          {frames.map((frameData) => {
+          {frames.map((frame) => {
             return (
               <Frame
-                data={frameData}
-                key={frameData.id}
-                onSelect={(e) => {
-                  if (tool.type === "move") setSelectedObject(e);
+                frame={frame}
+                key={frame.id}
+                setSelectedObject={() => {
+                  if (tool.type === "move") setSelectedObject(frame);
                 }}
-                isSelected={selectedObject?.id === frameData.id}
+                isSelected={selectedObject?.id === frame.id}
                 draggable={tool.type === "move"}
                 stageScale={stageScale}
                 updateFrame={(e: ObjectData) => updateFrame(e)}
@@ -369,6 +365,7 @@ export default function EditorPage() {
           frames={frames}
           selectedObject={selectedObject}
           setSelectedObject={(e) => setSelectedObject(e)}
+          updateFrame={(e: ObjectData) => updateFrame(e)}
         />
       </div>
     </MenuWrapper>

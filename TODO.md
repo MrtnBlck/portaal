@@ -20,12 +20,14 @@
 
 - [ ] Context menu separation for canvas & UI
 - [ ] Fix multiple percentage signs in zoom input
-- [ ] Resize UI update
+- [ ] Multiple states for Frames
+- [ ] Fix x/y UI update
 
 ## Look into
 
 - Jotai --> Global state management
 - Zustand --> nagy adatbol megmondani, hogy mit updateljen
+- D&D kit
 
 ## Features Categorized by Importance Level
 
@@ -94,6 +96,7 @@
 - [ ] ~/editor:: Filters
 - [ ] ~/editor:: Blending modes
 - [ ] ~/editor:: Custom cursors
+- [ ] ~/editor:: Tooltip & Context menu custom css
 
 ```tsx
 <Stage

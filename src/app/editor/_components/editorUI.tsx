@@ -13,6 +13,7 @@ interface EditorUIProps {
   frames: ObjectData[];
   selectedObject: ObjectData | null;
   setSelectedObject: (object: ObjectData | null) => void;
+  updateFrame: (frame: ObjectData) => void;
 }
 
 export function EditorUI({
@@ -22,23 +23,28 @@ export function EditorUI({
   setStageScale,
   frames,
   selectedObject,
-  setSelectedObject
+  setSelectedObject,
+  updateFrame,
 }: EditorUIProps) {
   return (
     <>
       <div className="absolute inset-y-0 left-0 flex w-72 select-none flex-col gap-2.5 p-2.5">
-        <VariantsPanel frames={frames} selectedObject={selectedObject} setSelectedObject={(e) => setSelectedObject(e)}/>
+        <VariantsPanel
+          frames={frames}
+          selectedObject={selectedObject}
+          setSelectedObject={(e) => setSelectedObject(e)}
+        />
         <LayersPanel />
       </div>
-      <div className="absolute inset-y-0 right-0 flex w-72 flex-col gap-2.5 p-2.5 select-none">
-        <ActionBar stageScale={stageScale} setStageScale={setStageScale}/>
-        <PropertiesPanel selectedObject={selectedObject}/>
+      <div className="absolute inset-y-0 right-0 flex w-72 select-none flex-col gap-2.5 p-2.5">
+        <ActionBar stageScale={stageScale} setStageScale={setStageScale} />
+        <PropertiesPanel selectedObject={selectedObject} updateFrame={updateFrame}/>
       </div>
-      <div className="absolute bottom-0 left-1/2 w-full max-w-64 -translate-x-1/2 p-2.5 select-none">
+      <div className="absolute bottom-0 left-1/2 w-auto -translate-x-1/2 select-none p-2.5">
         <ToolBar
           tool={tool}
           setTool={setTool}
-          className="w-full space-x-1 rounded-lg bg-[#1F1F1F] p-1.5 text-white shadow-[0px_0px_5px_4px_rgba(0,_0,_0,_0.1)]"
+          className="w-full space-x-1 rounded-lg border border-neutral-800 bg-[#1F1F1FEB] p-1.5 text-white shadow-[0px_0px_5px_4px_rgba(0,_0,_0,_0.05)] backdrop-blur-lg"
         />
       </div>
     </>

@@ -32,9 +32,9 @@ export function ActionBar({ stageScale, setStageScale }: ActionBarProps) {
     }
     if (value !== "") {
       const newValue = Math.min(Math.max(parseInt(value), 10), 999);
-      setStageScale(newValue / 100);    
+      setStageScale(newValue / 100);
     } else {
-      setStageScaleInput(`${Math.round(stageScale * 100)}%`)
+      setStageScaleInput(`${Math.round(stageScale * 100)}%`);
     }
   };
 
@@ -53,8 +53,14 @@ export function ActionBar({ stageScale, setStageScale }: ActionBarProps) {
   };
 
   return (
-    <div className="flex items-center justify-between rounded-lg bg-[#1F1F1F] p-1.5 pl-2 text-white shadow-[0px_0px_5px_4px_rgba(0,_0,_0,_0.1)]">
-      <Input className="w-min-0 h-7 w-16 bg-[#282828] text-center" value={stageScaleInput} onBlur={handleOnBlur} onChange={handleOnChange} onKeyDown={handleOnKeyDown}/>
+    <div className="sidepanel flex items-center justify-between !p-1.5 !px-2">
+      <Input
+        className="w-min-0 h-7 w-16 !rounded-sm border border-neutral-700/50 bg-white/5 text-center text-neutral-400 hover:text-neutral-100"
+        value={stageScaleInput}
+        onBlur={handleOnBlur}
+        onChange={handleOnChange}
+        onKeyDown={handleOnKeyDown}
+      />
       <div className="flex gap-1.5">
         <TooltipProvider>
           <Tooltip>
@@ -62,7 +68,7 @@ export function ActionBar({ stageScale, setStageScale }: ActionBarProps) {
               <span>
                 <Button
                   size="icon"
-                  className="h-8 w-8 bg-[#5952BB] text-white"
+                  className="h-8 w-8 bg-[#5952BB] text-white !rounded-sm"
                   disabled
                 >
                   <Download />
@@ -78,7 +84,7 @@ export function ActionBar({ stageScale, setStageScale }: ActionBarProps) {
               <span>
                 <Button
                   size="icon"
-                  className="h-8 w-8 bg-[#528FBB] text-white"
+                  className="h-8 w-8 bg-[#528FBB] text-white !rounded-sm"
                   disabled
                 >
                   <Save />
@@ -94,7 +100,7 @@ export function ActionBar({ stageScale, setStageScale }: ActionBarProps) {
               <span>
                 <Button
                   size="icon"
-                  className="h-8 w-8 bg-[#52BB86] text-white"
+                  className="h-8 w-8 bg-[#52BB86] text-white !rounded-sm"
                   disabled
                 >
                   <Send />

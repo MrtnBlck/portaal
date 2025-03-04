@@ -1,19 +1,23 @@
 export function LayersPanel() {
   return (
-    <div className="flex-1 rounded-lg bg-[#1F1F1F] px-0.5 pb-2.5 text-white shadow-[0px_0px_5px_4px_rgba(0,_0,_0,_0.1)]">
-      <div className="px-4 pb-2 pt-4 text-xs font-semibold">Elements: non functional</div>
+    <div className="sidepanel flex-1">
+      <div className="px-4 pb-2 pt-4 text-xs font-semibold">Elements</div>
       <div className="flex flex-col gap-1.5 px-1.5">
-        <div className="rounded-sm px-2.5 py-1 text-xs font-extralight hover:bg-white hover:bg-opacity-5">
-          <span className="font-black pr-2">T</span>Text type
+        <div className="rounded-md bg-white/5 px-2.5 py-1.5 text-xs text-white">
+          <span className="pr-2 font-bold">T</span>Text type
         </div>
-        <div className="rounded-sm px-2.5 py-1 text-xs font-extralight hover:bg-white hover:bg-opacity-5">
-          <span className="font-black pr-2">P</span>Picture type
+        <div className="inline-flex gap-2 rounded-md px-2.5 py-1.5 text-xs text-neutral-400 hover:bg-white hover:bg-opacity-5">
+          <span className="font-bold">P</span>Picture type
         </div>
-        <div className="rounded-sm px-2.5 py-1 text-xs font-extralight hover:bg-white hover:bg-opacity-5">
-          <span className="font-black pr-2">S</span>Shape type
+        <div className="rounded-md px-2.5 py-1.5 text-xs text-neutral-400 hover:bg-white hover:bg-opacity-5">
+          <span className="pr-2 font-bold">G</span>Group type
         </div>
-        <div className="rounded-sm px-2.5 py-1 text-xs font-extralight hover:bg-white hover:bg-opacity-5">
-          <span className="font-black pr-2">G</span>Group type
+
+        <div className="rounded-md px-2.5 py-1.5 indent-4 text-xs text-neutral-400 hover:bg-white hover:bg-opacity-5">
+          <span className="pr-2 font-bold">S</span>Shape type
+        </div>
+        <div className="rounded-md px-2.5 py-1.5 indent-8 text-xs text-neutral-400 hover:bg-white hover:bg-opacity-5">
+          <span className="pr-2 font-bold">S</span>Shape type
         </div>
       </div>
     </div>

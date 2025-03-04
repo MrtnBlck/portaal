@@ -6,17 +6,17 @@ import type Konva from "konva";
 import type { ObjectData } from "../page";
 
 interface RectProps {
-  data: ObjectData;
+  frame: ObjectData;
   fill?: string;
-  onSelect: (e: ObjectData) => void;
+  setSelectedObject: () => void;
   isSelected: boolean;
   setData: (e: ObjectData) => void;
   updateFrame: (e: ObjectData) => void;
 }
 
 interface FrameProps {
-  data: ObjectData;
-  onSelect: (e: ObjectData) => void;
+  frame: ObjectData;
+  setSelectedObject: () => void;
   isSelected: boolean;
   draggable: boolean;
   children?: React.ReactNode;
@@ -25,12 +25,12 @@ interface FrameProps {
 }
 
 function FrameRect({
-  data,
+  frame,
   fill = "#FFFFFF",
-  onSelect,
+  setSelectedObject,
   isSelected,
   setData,
-  updateFrame
+  updateFrame,
 }: RectProps) {
   const shapeRef = useRef<Konva.Rect>(null);
   const trRef = useRef<Konva.Transformer>(null);
@@ -46,18 +46,17 @@ function FrameRect({
   return (
     <>
       <Rect
-        x={data.x}
-        y={data.y}
-        width={data.width}
-        height={data.height}
+        x={frame.x}
+        y={frame.y}
+        width={frame.width}
+        height={frame.height}
         fill={fill}
-        onClick={() => onSelect(data)}
-        onTap={() => onSelect(data)}
+        onClick={() => setSelectedObject()}
+        onTap={() => setSelectedObject()}
         ref={shapeRef}
         onTransformEnd={() => {
           const node = shapeRef.current;
           if (node) {
-            console.log(node);
             const scaleX = node.scaleX();
             const scaleY = node.scaleY();
 
@@ -70,13 +69,13 @@ function FrameRect({
             node.scaleX(1);
             node.scaleY(1);
             setData({
-              ...data,
+              ...frame,
               x: Math.round(node.x()),
               y: Math.round(node.y()),
               ...size,
             });
             updateFrame({
-              ...data,
+              ...frame,
               x: Math.round(node.x()),
               y: Math.round(node.y()),
               ...size,
@@ -89,7 +88,7 @@ function FrameRect({
           // TODO: only update X,Y, do not overrite other properties
           if (node) {
             setData({
-              ...data,
+              ...frame,
               x: Math.round(node.x()),
               y: Math.round(node.y()),
             });
@@ -116,32 +115,42 @@ function FrameRect({
 }
 
 export function Frame({
-  data,
-  onSelect,
+  frame,
+  setSelectedObject,
   isSelected,
   draggable,
   children,
   stageScale,
-  updateFrame
+  updateFrame,
 }: FrameProps) {
-  const [ObjectData, setObjectData] = useState(data);
+  const [frameState, setFrameState] = useState(frame);
   const inverseScale = 1 / stageScale;
+
+  useEffect(() => {
+    setFrameState(frame);
+  }, [frame]);
+
+
+  useEffect(() => {
+    setSelectedObject();
+  }, [frameState, setSelectedObject]);
+
   return (
-    <Layer draggable={draggable} onDragStart={() => onSelect(ObjectData)}>
+    <Layer draggable={draggable} onDragStart={() => setSelectedObject()}>
       <Text
-        text={ObjectData.name}
+        text={frameState.name}
         fill={isSelected ? "#70AFDC" : "#979797"}
-        x={ObjectData.x}
-        y={ObjectData.y - 20 * inverseScale}
+        x={frameState.x}
+        y={frameState.y - 20 * inverseScale}
         scale={{ x: inverseScale, y: inverseScale }}
-        onClick={() => onSelect(ObjectData)}
-        onTap={() => onSelect(ObjectData)}
+        onClick={() => setSelectedObject()}
+        onTap={() => setSelectedObject()}
       />
       <FrameRect
-        data={ObjectData}
+        frame={frameState}
         isSelected={isSelected}
-        onSelect={() => onSelect(ObjectData)}
-        setData={(e) => setObjectData(e)}
+        setSelectedObject={() => setSelectedObject()}
+        setData={(e) => setFrameState(e)}
         updateFrame={(e) => updateFrame(e)}
       />
       {children}
