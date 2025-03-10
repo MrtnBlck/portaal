@@ -1,15 +1,14 @@
-import type { ObjectData } from "../page";
 import { PropertiesInput } from "./propertiesInput";
+import { useFrameStore, useEditorStore } from "../store";
 
-interface propertiesPanelProps {
-  selectedObject: ObjectData;
-  updateFrame: (frame: ObjectData) => void;
-}
+export function PropertiesPanel() {
+  const selectedObject = useEditorStore((state) => state.selectedObject);
+  const updateFrame = useFrameStore((state) => state.updateFrame);
 
-export function PropertiesPanel({
-  selectedObject,
-  updateFrame,
-}: propertiesPanelProps) {
+  if (!selectedObject) {
+    return null;
+  }
+
   return (
     <div className="sidepanel flex-1">
       <div className="px-3 pb-3 pt-3 text-sm font-bold">

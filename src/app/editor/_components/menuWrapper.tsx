@@ -4,20 +4,19 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "~/components/ui/context-menu";
-
-import type { ObjectData } from "../page";
+import { useEditorStore } from "../store";
 
 interface MenuWrapperProps {
   children: React.ReactNode;
   deleteObject: () => void;
-  selectedObject: ObjectData | null;
 }
 
 export function MenuWrapper({
   children,
   deleteObject,
-  selectedObject,
 }: MenuWrapperProps) {
+  const selectedObject = useEditorStore((state) => state.selectedObject);
+
   return (
     <ContextMenu modal={false}>
       <ContextMenuTrigger disabled={false}>{children}</ContextMenuTrigger>

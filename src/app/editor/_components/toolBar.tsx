@@ -6,16 +6,17 @@ import {
 } from "~/components/ui/tooltip";
 
 import { Toggle } from "~/components/ui/toggle";
-
-interface ToolBarProps {
-  tool: "move" | "hand" | "frame" | "wip";
-  setTool: (tool: "move" | "hand" | "frame") => void;
-  className?: string;
-}
-
+import { useEditorStore } from "../store";
 import { Hand, MousePointer2, Frame, Square, Circle, Type } from "lucide-react";
 
-export function ToolBar({ tool, setTool, className }: ToolBarProps) {
+interface ToolBarProps {
+  className: string;
+}
+
+export function ToolBar({ className }: ToolBarProps) {
+  const tool = useEditorStore((state) => state.tool.type);
+  const setTool = useEditorStore((state) => state.setTool);
+
   return (
     <div className={className}>
       <TooltipProvider>
@@ -24,7 +25,9 @@ export function ToolBar({ tool, setTool, className }: ToolBarProps) {
             <span>
               <Toggle
                 pressed={tool === "move"}
-                onPressedChange={() => setTool("move")}
+                onPressedChange={() =>
+                  setTool({ type: "move", method: "selected" })
+                }
               >
                 <MousePointer2 />
               </Toggle>
@@ -41,7 +44,9 @@ export function ToolBar({ tool, setTool, className }: ToolBarProps) {
             <span>
               <Toggle
                 pressed={tool === "hand"}
-                onPressedChange={() => setTool("hand")}
+                onPressedChange={() =>
+                  setTool({ type: "hand", method: "selected" })
+                }
               >
                 <Hand />
               </Toggle>
@@ -58,7 +63,9 @@ export function ToolBar({ tool, setTool, className }: ToolBarProps) {
             <span>
               <Toggle
                 pressed={tool === "frame"}
-                onPressedChange={() => setTool("frame")}
+                onPressedChange={() =>
+                  setTool({ type: "frame", method: "selected" })
+                }
               >
                 <Frame />
               </Toggle>
@@ -74,9 +81,10 @@ export function ToolBar({ tool, setTool, className }: ToolBarProps) {
           <TooltipTrigger asChild>
             <span>
               <Toggle
-                pressed={tool === "wip"}
-                onPressedChange={() => setTool("move")}
-                disabled
+                pressed={tool === "rectangle"}
+                onPressedChange={() =>
+                  setTool({ type: "rectangle", method: "selected" })
+                }
               >
                 <Square />
               </Toggle>
@@ -93,7 +101,9 @@ export function ToolBar({ tool, setTool, className }: ToolBarProps) {
             <span>
               <Toggle
                 pressed={tool === "wip"}
-                onPressedChange={() => setTool("move")}
+                onPressedChange={() =>
+                  setTool({ type: "wip", method: "selected" })
+                }
                 disabled
               >
                 <Circle />
@@ -129,7 +139,9 @@ export function ToolBar({ tool, setTool, className }: ToolBarProps) {
             <span>
               <Toggle
                 pressed={tool === "wip"}
-                onPressedChange={() => setTool("move")}
+                onPressedChange={() =>
+                  setTool({ type: "wip", method: "selected" })
+                }
                 disabled
               >
                 <Type />

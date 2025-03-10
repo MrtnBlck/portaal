@@ -1,36 +1,39 @@
 "use client";
 
-import { Layer, Rect, Text, Transformer } from "react-konva";
-import { useRef, useEffect, useState } from "react";
+import { Layer, Rect, Text, Transformer, Group } from "react-konva";
+import { useRef, useEffect, useState, useCallback } from "react";
 import type Konva from "konva";
 import type { ObjectData } from "../page";
+import { useFrameStore, useEditorStore } from "../store";
+import { Element } from "./element";
 
-interface RectProps extends Omit<FrameProps, "stageScale" | "children"> {
-  setData: (e: ObjectData) => void;
+interface RectProps extends Omit<FrameProps, "stageScale" | "draggable"> {
   fill?: string;
+  isSelected: boolean;
+  setSelectedObject: () => void;
+  titleRef: React.RefObject<Konva.Text>;
+  inverseScale: number;
 }
+
+//TODO: New structure: Layer(Group[draggable](Text, RectFrame, Group(Content), Transformer))
 
 interface FrameProps {
   frame: ObjectData;
-  setSelectedObject: () => void;
-  isSelected: boolean;
-  updateFrame: (e: ObjectData) => void;
-  draggable: boolean;
-  stageScale: number;
-  children?: React.ReactNode;
 }
 
 function FrameRect({
   frame,
   fill = "#FFFFFF",
-  setSelectedObject,
   isSelected,
-  setData,
-  updateFrame,
-  draggable,
+  setSelectedObject,
+  titleRef,
+  inverseScale,
 }: RectProps) {
   const shapeRef = useRef<Konva.Rect>(null);
   const trRef = useRef<Konva.Transformer>(null);
+  const isTransformingRef = useRef(false);
+  const updateFrame = useFrameStore((state) => state.updateFrame);
+  const [frameXY, setFrameXY] = useState({ x: frame.x, y: frame.y });
 
   useEffect(() => {
     if (isSelected && trRef.current && shapeRef.current) {
@@ -50,34 +53,7 @@ function FrameRect({
         fill={fill}
         onClick={() => setSelectedObject()}
         onTap={() => setSelectedObject()}
-        onDragStart={() => setSelectedObject()}
-        draggable={draggable}
         ref={shapeRef}
-        onDragEnd={() => {
-          const node = shapeRef.current;
-          if (node) {
-            setData({
-              ...frame,
-              x: Math.round(node.x()),
-              y: Math.round(node.y()),
-            });
-            updateFrame({
-              ...frame,
-              x: Math.round(node.x()),
-              y: Math.round(node.y()),
-            });
-          }
-        }}
-        onDragMove={() => {
-          const node = shapeRef.current;
-          if (node) {
-            setData({
-              ...frame,
-              x: Math.round(node.x()),
-              y: Math.round(node.y()),
-            });
-          }
-        }}
         onTransformEnd={() => {
           const node = shapeRef.current;
           if (node) {
@@ -89,36 +65,61 @@ function FrameRect({
               height: Math.round(Math.max(5, node.height() * scaleY)),
             };
 
-            shapeRef.current?.setSize(size);
+            node.setSize(size);
             node.scaleX(1);
             node.scaleY(1);
-            setData({
-              ...frame,
-              x: Math.round(node.x()),
-              y: Math.round(node.y()),
-              ...size,
-            });
+            // Set frame XY, upon update the group XY will be reset
             updateFrame({
               ...frame,
               x: Math.round(node.x()),
               y: Math.round(node.y()),
               ...size,
             });
+            isTransformingRef.current = false;
           }
         }}
         onTransform={() => {
-          const node = shapeRef.current;
-          // TODO: limit property updates
-          // TODO: only update X,Y, do not overrite other properties
-          if (node) {
-            setData({
-              ...frame,
-              x: Math.round(node.x()),
-              y: Math.round(node.y()),
-            });
+          const textNode = titleRef.current;
+          const frameNode = shapeRef.current;
+          isTransformingRef.current = true;
+          if (textNode && frameNode) {
+            textNode.x(frameNode.x());
+            textNode.y(frameNode.y() + -20 * inverseScale);
+            setFrameXY({ x: frameNode.x(), y: frameNode.y() });
           }
         }}
       />
+      <Group
+        clipFunc={
+          isSelected
+            ? undefined
+            : (ctx) => {
+                ctx.rect(frame.x, frame.y, frame.width, frame.height);
+              }
+        }
+      >
+        {frame.elements?.map((element) => {
+          const node = shapeRef.current;
+          // Look into ref, change to state
+          if (node) {
+            if (isTransformingRef.current) {
+              console.log("Transforming");
+              return (
+                <Element element={element} frameXY={frameXY} key={element.id} />
+              );
+            }
+            console.log("Not Transforming");
+            return (
+              <Element
+                element={element}
+                frameXY={{ x: frame.x, y: frame.y }}
+                key={element.id}
+              />
+            );
+          }
+          return null;
+        })}
+      </Group>
       {isSelected && (
         <Transformer
           ref={trRef}
@@ -138,51 +139,70 @@ function FrameRect({
   );
 }
 
-export function Frame({
-  frame,
-  setSelectedObject,
-  isSelected,
-  draggable,
-  children,
-  stageScale,
-  updateFrame,
-}: FrameProps) {
-  const [frameState, setFrameState] = useState(frame);
+export function Frame({ frame }: FrameProps) {
+  const stageScale = useEditorStore((state) => state.stageScale);
+  const updateFrame = useFrameStore((state) => state.updateFrame);
+  const draggable = useEditorStore((state) => state.tool.type === "move");
+  const tool = useEditorStore((state) => state.tool);
+  const setStoreSelectedObject = useEditorStore(
+    (state) => state.setSelectedObject,
+  );
+  const setSelectedObject = useCallback(() => {
+    if (tool.type === "move") setStoreSelectedObject(frame);
+  }, [tool.type, frame]);
+  const isSelected = useEditorStore(
+    (state) => state.selectedObject?.id === frame.id,
+  );
   const inverseScale = 1 / stageScale;
   const setSelectedObjectRef = useRef(setSelectedObject);
+  const groupRef = useRef<Konva.Group>(null);
+  const titleRef = useRef<Konva.Text>(null);
 
+  // Reset group XY, update the Rect's position only
   useEffect(() => {
-    setFrameState(frame);
+    groupRef.current?.x(0);
+    groupRef.current?.y(0);
   }, [frame]);
 
+  // Call selectedObject to update UI
   useEffect(() => {
-    setSelectedObjectRef.current = setSelectedObject;
-  }, [setSelectedObject]);
-
-  useEffect(() => {
-    setSelectedObjectRef.current();
-  }, [frameState]);
+    if (isSelected) setSelectedObject();
+  }, [frame, isSelected, setSelectedObject]);
 
   return (
-    <Layer>
-      <Text
-        text={frameState.name}
-        fill={isSelected ? "#70AFDC" : "#979797"}
-        x={frameState.x}
-        y={frameState.y - 20 * inverseScale}
-        scale={{ x: inverseScale, y: inverseScale }}
-        onClick={() => setSelectedObject()}
-        onTap={() => setSelectedObject()}
-      />
-      <FrameRect
-        frame={frameState}
-        isSelected={isSelected}
-        setSelectedObject={() => setSelectedObject()}
-        setData={(e) => setFrameState(e)}
-        updateFrame={(e) => updateFrame(e)}
+    <Layer id="myLayer">
+      <Group
+        ref={groupRef}
         draggable={draggable}
-      />
-      {children}
+        onDragEnd={() => {
+          const node = groupRef.current;
+          if (node) {
+            updateFrame({
+              ...frame,
+              x: Math.round(node.x() + frame.x),
+              y: Math.round(node.y() + frame.y),
+            });
+          }
+        }}
+      >
+        <FrameRect
+          frame={frame}
+          isSelected={isSelected}
+          setSelectedObject={() => setSelectedObject()}
+          titleRef={titleRef}
+          inverseScale={inverseScale}
+        />
+        <Text
+          text={frame.name}
+          fill={isSelected ? "#70AFDC" : "#979797"}
+          x={frame.x}
+          y={frame.y + -20 * inverseScale}
+          scale={{ x: inverseScale, y: inverseScale }}
+          onClick={() => setSelectedObject()}
+          onTap={() => setSelectedObject()}
+          ref={titleRef}
+        />
+      </Group>
     </Layer>
   );
 }

@@ -19,20 +19,21 @@
 ## Problems
 
 - [ ] Context menu separation for canvas & UI
-- [ ] Multiple states for Frames
 - [ ] Frame naming
+- [ ] Frame creation: laggy size update
 
 ## Look into
 
 - Jotai --> Global state management
 - Zustand --> nagy adatbol megmondani, hogy mit updateljen
 - D&D kit
+- UseImperativeHandle
+- ForwardRef
 
 ## Features Categorized by Importance Level
 
 ### Level 1 - Absolutely Must Have
 
-- [ ] Landing page
 - [x] ~/editor:: basic functionality
 - [x] ~/editor:: Frames
 - [x] ~/editor:: Frame resizing
@@ -44,17 +45,15 @@
 - [x] ~/editor:: Frame adding
 - [ ] ~/editor:: Undo/Redo (+shortcut)
 - [x] ~/editor:: Zoom (+shortcut)
+- [ ] ~/editor:: Select multiple things at once
 - [ ] ~/editor:: Copy/Paste/Cut (+shortcut)
 - [ ] ~/editor:: Frame content CRUD
 - [ ] ~/editor:: Text
 - [ ] ~/editor:: Image
-- [ ] ~/editor:: Shapes/Paths
 - [ ] ~/editor:: Mark elements as placeholders
 - [ ] ~/editor:: Force marked elements to be used on all frames
 - [ ] ~/editor:: Layering
 - [ ] ~/editor:: Grouping
-- [ ] ~/editor:: Save
-- [ ] ~/editor:: Save as template
 - [ ] ~/editor:: Export
 - [ ] ~/register
 - [ ] ~/login
@@ -68,6 +67,8 @@
 
 ### Level 2 - Should Have
 
+- [ ] ~/editor:: Save
+- [ ] ~/editor:: Save as template
 - [ ] ~/projects/new:: filtering
 - [ ] ~/editor:: Select all (+shortcut)
 - [ ] ~/editor:: Duplicate (+shortcut)
@@ -86,8 +87,10 @@
 
 ### Level 3 - Nice to Have
 
+- [ ] Landing page
 - [ ] ~/editor:: Frame padding & margin (Restrict element placement)
 - [ ] ~/projects/new:: search
+- [ ] ~/editor:: Shapes/Paths
 - [ ] ~/projects:: delete
 - [ ] ~/notifications
 - [ ] ~/chat
@@ -97,6 +100,9 @@
 - [ ] ~/editor:: Blending modes
 - [ ] ~/editor:: Custom cursors
 - [ ] ~/editor:: Tooltip & Context menu custom css
+- [ ] ~/editor:: Place selected frame on top
+- [ ] ~/editor:: elements without frames
+- [ ] ~/editor:: paste outside content
 
 ```tsx
 <Stage

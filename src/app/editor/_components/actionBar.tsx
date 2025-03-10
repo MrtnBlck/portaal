@@ -11,14 +11,12 @@ import {
 } from "~/components/ui/tooltip";
 import { Save, Download, Send } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useEditorStore } from "../store";
 
-interface ActionBarProps {
-  stageScale: number;
-  setStageScale: (scale: number) => void;
-}
-
-export function ActionBar({ stageScale, setStageScale }: ActionBarProps) {
+export function ActionBar() {
   const [stageScaleInput, setStageScaleInput] = useState("100%");
+  const stageScale = useEditorStore((state) => state.stageScale);
+  const setStageScale = useEditorStore((state) => state.setStageScale);
 
   useEffect(() => {
     setStageScaleInput(`${Math.round(stageScale * 100)}%`);
