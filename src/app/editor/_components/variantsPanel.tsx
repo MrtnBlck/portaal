@@ -17,7 +17,7 @@ export function VariantsPanel() {
         {frames.map((frame) => (
           <div
             key={frame.id}
-            className={`rounded-md px-2.5 py-1.5 text-xs hover:bg-white hover:bg-opacity-5 ${selectedObject?.id === frame.id ? "bg-white bg-opacity-5" : ""}`}
+            className={`rounded-md px-2.5 py-1.5 text-xs hover:bg-white hover:bg-opacity-5 ${selectedObject?.id === frame.id || selectedObject?.parentID === frame.id ? "bg-white bg-opacity-5" : "text-neutral-400"}`}
             onClick={() => setSelectedObject(frame)}
           >
             {frame.name}

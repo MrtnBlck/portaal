@@ -85,6 +85,7 @@ export function ToolBar({ className }: ToolBarProps) {
                 onPressedChange={() =>
                   setTool({ type: "rectangle", method: "selected" })
                 }
+                disabled
               >
                 <Square />
               </Toggle>

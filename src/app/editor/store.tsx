@@ -7,6 +7,7 @@ type FrameStore = {
   frames: ObjectData[];
   setFrames: (newFrames: ObjectData[]) => void;
   addFrame: (newFrame: ObjectData) => void;
+  getFrame: (id: string) => ObjectData | undefined;
   updateFrame: (updatedFrame: ObjectData) => void;
   deleteFrame: (id: string) => void;
   updateElement: (frameId: string, updatedElement: ObjectData) => void;
@@ -62,13 +63,17 @@ export const useFrameStore = create<FrameStore>((set) => ({
   setFrames: (newFrames) => set({ frames: newFrames }),
   addFrame: (newFrame) =>
     set((state) => ({ frames: [...state.frames, newFrame] })),
-    // TODO: test out setSelectedObject here
+  // TODO: test out setSelectedObject here
   updateFrame: (updatedFrame) =>
-    set((state) => ({
-      frames: state.frames.map((frame) =>
+    set((state) => {
+      const newFrames = state.frames.map((frame) =>
         frame.id === updatedFrame.id ? updatedFrame : frame,
-      ),
-    })),
+      );
+      useEditorStore.setState({ selectedObject: updatedFrame });
+      return {
+        frames: newFrames,
+      };
+    }),
   deleteFrame: (id) =>
     set((state) => ({
       frames: state.frames.filter((frame) => frame.id !== id),
@@ -79,22 +84,18 @@ export const useFrameStore = create<FrameStore>((set) => ({
         if (frame.id !== frameID) {
           return frame;
         }
+        useEditorStore.setState({ selectedObject: updatedElement });
         return {
           ...frame,
           elements: frame.elements?.map((element) =>
-            //element.id === updatedElement.id ? updatedElement : element,
-            {
-              if (element.id === updatedElement.id) {
-                console.log("element XY updated to:",updatedElement.x, updatedElement.y);
-                return updatedElement;
-              } else {
-                return element;
-              }
-            },
+            element.id === updatedElement.id ? updatedElement : element,
           ),
         };
       }),
     })),
+  getFrame: (id) => {
+    return initialFrames.find((frame) => frame.id === id);
+  },
 }));
 
 export const useEditorStore = create<EditorStore>((set) => ({

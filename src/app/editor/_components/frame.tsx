@@ -31,7 +31,8 @@ function FrameRect({
 }: RectProps) {
   const shapeRef = useRef<Konva.Rect>(null);
   const trRef = useRef<Konva.Transformer>(null);
-  const isTransformingRef = useRef(false);
+  //const isTransformingRef = useRef(false);
+  const [isTransforming, setIsTransforming] = useState(false);
   const updateFrame = useFrameStore((state) => state.updateFrame);
   const [frameXY, setFrameXY] = useState({ x: frame.x, y: frame.y });
 
@@ -75,13 +76,13 @@ function FrameRect({
               y: Math.round(node.y()),
               ...size,
             });
-            isTransformingRef.current = false;
+            setIsTransforming(false);
           }
         }}
         onTransform={() => {
           const textNode = titleRef.current;
           const frameNode = shapeRef.current;
-          isTransformingRef.current = true;
+          setIsTransforming(true);
           if (textNode && frameNode) {
             textNode.x(frameNode.x());
             textNode.y(frameNode.y() + -20 * inverseScale);
@@ -99,25 +100,18 @@ function FrameRect({
         }
       >
         {frame.elements?.map((element) => {
-          const node = shapeRef.current;
-          // Look into ref, change to state
-          if (node) {
-            if (isTransformingRef.current) {
-              console.log("Transforming");
-              return (
-                <Element element={element} frameXY={frameXY} key={element.id} />
-              );
-            }
-            console.log("Not Transforming");
+          if (isTransforming) {
             return (
-              <Element
-                element={element}
-                frameXY={{ x: frame.x, y: frame.y }}
-                key={element.id}
-              />
+              <Element element={element} frameXY={frameXY} key={element.id} />
             );
           }
-          return null;
+          return (
+            <Element
+              element={element}
+              frameXY={{ x: frame.x, y: frame.y }}
+              key={element.id}
+            />
+          );
         })}
       </Group>
       {isSelected && (
@@ -149,12 +143,11 @@ export function Frame({ frame }: FrameProps) {
   );
   const setSelectedObject = useCallback(() => {
     if (tool.type === "move") setStoreSelectedObject(frame);
-  }, [tool.type, frame]);
+  }, [tool.type, frame, setStoreSelectedObject]);
   const isSelected = useEditorStore(
     (state) => state.selectedObject?.id === frame.id,
   );
   const inverseScale = 1 / stageScale;
-  const setSelectedObjectRef = useRef(setSelectedObject);
   const groupRef = useRef<Konva.Group>(null);
   const titleRef = useRef<Konva.Text>(null);
 
@@ -163,11 +156,6 @@ export function Frame({ frame }: FrameProps) {
     groupRef.current?.x(0);
     groupRef.current?.y(0);
   }, [frame]);
-
-  // Call selectedObject to update UI
-  useEffect(() => {
-    if (isSelected) setSelectedObject();
-  }, [frame, isSelected, setSelectedObject]);
 
   return (
     <Layer id="myLayer">
