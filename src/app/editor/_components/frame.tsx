@@ -10,7 +10,7 @@ import { Element } from "./element";
 interface RectProps {
   frame: ObjectData;
   fill?: string;
-  isSelected: boolean;
+  selectedObject: ObjectData | null;
   setSelectedObject: () => void;
   titleRef: React.RefObject<Konva.Text>;
   inverseScale: number;
@@ -23,7 +23,7 @@ interface FrameProps {
 function FrameRect({
   frame,
   fill = "#FFFFFF",
-  isSelected,
+  selectedObject,
   setSelectedObject,
   titleRef,
   inverseScale,
@@ -34,6 +34,7 @@ function FrameRect({
   const [isTransforming, setIsTransforming] = useState(false);
   const updateFrame = useFrameStore((state) => state.updateFrame);
   const [frameXY, setFrameXY] = useState({ x: frame.x, y: frame.y });
+  const isSelected = selectedObject?.id === frame.id;
 
   useEffect(() => {
     if (isSelected && trRef.current && shapeRef.current) {
@@ -46,6 +47,7 @@ function FrameRect({
   return (
     <>
       <Rect
+        id={frame.id}
         x={frame.x}
         y={frame.y}
         width={frame.width}
@@ -91,7 +93,7 @@ function FrameRect({
       />
       <Group
         clipFunc={
-          isSelected
+          isSelected || selectedObject?.parentID === frame.id
             ? undefined
             : (ctx) => {
                 ctx.rect(frame.x, frame.y, frame.width, frame.height);
@@ -156,9 +158,7 @@ export function Frame({ ID }: FrameProps) {
     if (tool.type === "move" && frame) setStoreSelectedObject(frame);
   }, [tool.type, frame, setStoreSelectedObject]);
 
-  const isSelected = useEditorStore(
-    (state) => state.selectedObject?.id === frame?.id,
-  );
+  const selectedObject = useEditorStore((state) => state.selectedObject);
 
   if (!frame) return null;
 
@@ -180,14 +180,14 @@ export function Frame({ ID }: FrameProps) {
       >
         <FrameRect
           frame={frame}
-          isSelected={isSelected}
+          selectedObject={selectedObject}
           setSelectedObject={() => setSelectedObject()}
           titleRef={titleRef}
           inverseScale={inverseScale}
         />
         <Text
           text={frame.name}
-          fill={isSelected ? "#70AFDC" : "#979797"}
+          fill={selectedObject?.id === frame.id ? "#70AFDC" : "#979797"}
           x={frame.x}
           y={frame.y + -20 * inverseScale}
           scale={{ x: inverseScale, y: inverseScale }}

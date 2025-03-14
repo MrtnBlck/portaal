@@ -10,13 +10,13 @@ type FrameStore = {
   getFrameIDs: () => string[];
   getFrame: (id: string) => ObjectData | undefined;
   addFrame: (newFrame: ObjectData) => void;
-  updateFrame: (updatedFrame: ObjectData) => void;
+  updateFrame: (updatedFrame: ObjectData, triggerSelect?: boolean) => void;
   deleteFrame: (id: string) => void;
 
   getElementIDs: (frameID: string) => string[];
   getElement: (frameID: string, elementID: string) => ObjectData | undefined;
-  addElement: (frameID: string, newElement: ObjectData) => void;
-  updateElement: (frameId: string, updatedElement: ObjectData) => void;
+  addElement: (frame: ObjectData, newElement: ObjectData) => void;
+  updateElement: (frameId: string, updatedElement: ObjectData, triggerSelect?: boolean) => void;
   deleteElement: (frameID: string, id: string) => void;
 };
 
@@ -76,11 +76,11 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
   getFrame: (id) => get().frames.find((frame) => frame.id === id),
   addFrame: (newFrame) =>
     set((state) => ({ frames: [...state.frames, newFrame] })),
-  updateFrame: (updatedFrame) =>
+  updateFrame: (updatedFrame, triggerSelect = true) =>
     set((state) => ({
       frames: state.frames.map((frame) => {
         if (frame.id === updatedFrame.id) {
-          useEditorStore.setState({ selectedObject: updatedFrame });
+          if (triggerSelect) useEditorStore.setState({ selectedObject: updatedFrame });
           return updatedFrame;
         }
         return frame;
@@ -100,18 +100,16 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
     get()
       .getFrame(frameID)
       ?.elements?.find((element) => element.id === elementID),
-  addElement: (frameID, newElement) => {
-    const frame = get().getFrame(frameID);
+  addElement: (frame, newElement) => {
     if (frame) {
       const updatedFrame = {
         ...frame,
         elements: [...(frame.elements ?? []), newElement],
       };
       get().updateFrame(updatedFrame);
-      useEditorStore.setState({ selectedObject: newElement });
     }
   },
-  updateElement: (frameID, updatedElement) => {
+  updateElement: (frameID, updatedElement, triggerSelect = true) => {
     const frame = get().getFrame(frameID);
     if (frame) {
       const updatedFrame = {
@@ -120,8 +118,8 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
           element.id === updatedElement.id ? updatedElement : element,
         ),
       };
-      get().updateFrame(updatedFrame);
-      useEditorStore.setState({ selectedObject: updatedElement });
+      if (triggerSelect) useEditorStore.setState({ selectedObject: updatedElement });
+      get().updateFrame(updatedFrame, false);
     }
   },
   deleteElement: (frameID, id) => {
@@ -132,7 +130,6 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
         elements: frame.elements?.filter((element) => element.id !== id),
       };
       get().updateFrame(updatedFrame);
-      useEditorStore.setState({ selectedObject: frame });
     }
   },
 }));

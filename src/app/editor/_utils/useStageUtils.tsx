@@ -1,10 +1,9 @@
-
-
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useFrameStore, useEditorStore } from "../store";
 import { useRef, useCallback } from "react";
 import type { ObjectData, ObjectType } from "../page";
 import { v4 as uuidv4 } from "uuid";
+import type Konva from "konva";
 
 type DrawingPositions = {
   x: number;
@@ -22,6 +21,11 @@ export const useStageUtils = () => {
   const addStoreFrame = useFrameStore((state) => state.addFrame);
   const updateStoreFrame = useFrameStore((state) => state.updateFrame);
   const setStoreStageScale = useEditorStore((state) => state.setStageScale);
+  const getFrame = useFrameStore((state) => state.getFrame);
+  const addElement = useFrameStore((state) => state.addElement);
+  const currentDrawingElement = useRef<ObjectData | null>(null);
+  const updateElement = useFrameStore((state) => state.updateElement);
+  const deleteElement = useFrameStore((state) => state.deleteElement);
 
   const isDrawing = useRef(false);
   const drawingPositions = useRef<DrawingPositions>({ x: 0, y: 0 });
@@ -35,38 +39,65 @@ export const useStageUtils = () => {
   };
 
   const handleStageOnMouseDown = (
-    e: KonvaEventObject<MouseEvent | TouchEvent>,
+    e: KonvaEventObject<MouseEvent | TouchEvent>
   ) => {
+    if (storeTool.type === "move") {
+      checkDeselect(e);
+      return;
+    }
+    const stage = e.target.getStage();
+    if (!stage) return;
+    const pos = stage.getRelativePointerPosition();
+    if (!pos) return;
+
+    isDrawing.current = true;
+    drawingPositions.current = {
+      x: pos.x,
+      y: pos.y,
+    };
+
     switch (storeTool.type) {
-      case "move":
-        checkDeselect(e);
-        break;
       case "frame":
         setStoreSelectedObject(null);
-        const stage = e.target.getStage();
-        if (stage) {
-          const pos = stage.getRelativePointerPosition();
-          if (pos) {
-            isDrawing.current = true;
-            drawingPositions.current = {
-              x: pos.x,
-              y: pos.y,
-            };
-            const newFrame: ObjectData = {
-              id: uuidv4(),
-              name: `Frame ${storeFrames.length}`,
-              width: 20,
-              height: 20,
-              x: pos.x,
-              y: pos.y,
-              type: "Frame" as ObjectType,
-              elements: [] as ObjectData[],
-            };
-            addStoreFrame(newFrame);
-          }
-        }
+        const newFrame: ObjectData = {
+          id: uuidv4(),
+          name: `Frame ${storeFrames.length}`,
+          width: 20,
+          height: 20,
+          x: pos.x,
+          y: pos.y,
+          type: "Frame" as ObjectType,
+          elements: [] as ObjectData[],
+        };
+        addStoreFrame(newFrame);
+        currentDrawingElement.current = newFrame;
         break;
       case "rectangle":
+        const targetAttrs = e.target.attrs as Konva.NodeConfig;
+        if (!targetAttrs) return;
+        const frameID = targetAttrs.id!;
+        if (!frameID) return;
+        const frame = getFrame(frameID);
+        if (!frame) return; //TODO: display error
+        const newRectangle: ObjectData = {
+          id: uuidv4(),
+          name: frame.elements
+            ? `Rectangle ${frame.elements.length}`
+            : "Rectangle 0",
+          width: 1,
+          height: 1,
+          x: pos.x - frame.x,
+          y: pos.y - frame.y,
+          type: "Rectangle" as ObjectType,
+          parentID: frame.id,
+        };
+        drawingPositions.current = {
+          x: pos.x - frame.x,
+          y: pos.y - frame.y,
+        };
+        addElement(frame, newRectangle);
+        currentDrawingElement.current = newRectangle;
+        break;
       default:
         break;
     }
@@ -75,38 +106,42 @@ export const useStageUtils = () => {
   const handleStageOnMouseMove = (
     e: KonvaEventObject<MouseEvent | TouchEvent>,
   ) => {
-    if (storeTool.type === "frame" && isDrawing.current) {
-      const stage = e.target.getStage();
-      if (stage) {
-        const pos = stage.getRelativePointerPosition();
-        if (pos) {
-          const newFrame = storeFrames[storeFrames.length - 1];
-          if (newFrame) {
-            const x1 = drawingPositions.current.x;
-            const y1 = drawingPositions.current.y;
-            const x2 = pos.x;
-            const y2 = pos.y;
-            newFrame.x = Math.round(Math.min(x1, x2));
-            newFrame.y = Math.round(Math.min(y1, y2));
-            newFrame.width = Math.round(Math.abs(x2 - x1));
-            newFrame.height = Math.round(Math.abs(y2 - y1));
-            updateStoreFrame(newFrame);
-          }
-        }
-      }
-    } else if (storeTool.type === "rectangle" && isDrawing.current) {
+    if (!isDrawing.current) return;
+    const stage = e.target.getStage();
+    if (!stage) return;
+    const pos = stage.getRelativePointerPosition();
+    if (!pos) return;
+    const newObject = currentDrawingElement.current;
+    if (!newObject) return;
+    const frame = getFrame(newObject.parentID ?? "");
+
+    const x1 = drawingPositions.current.x;
+    const y1 = drawingPositions.current.y;
+    const x2 = pos.x - (frame ? frame.x : 0);
+    const y2 = pos.y - (frame ? frame.y : 0);
+    newObject.x = Math.round(Math.min(x1, x2));
+    newObject.y = Math.round(Math.min(y1, y2));
+    newObject.width = Math.round(Math.abs(x2 - x1));
+    newObject.height = Math.round(Math.abs(y2 - y1));
+
+    currentDrawingElement.current = newObject;
+    if (storeTool.type === "frame") {
+      updateStoreFrame(newObject, false);
+    } else if (storeTool.type === "rectangle" && newObject.parentID) {
+      updateElement(newObject.parentID, newObject, false);
     }
+
   };
 
   const handleStageOnMouseUp = () => {
-    if (storeTool.type === "frame" && isDrawing.current) {
-      isDrawing.current = false;
-      const newFrame = storeFrames[storeFrames.length - 1];
-      if (newFrame) {
-        setStoreSelectedObject(newFrame);
-      }
-    } else if (storeTool.type === "rectangle" && isDrawing.current) {
-    }
+    if (!isDrawing.current) return;
+    if (storeTool.type !== "frame" && storeTool.type !== "rectangle") return;
+    isDrawing.current = false;
+
+    const newObject = currentDrawingElement.current;
+    if (!newObject) return;
+    setStoreSelectedObject(newObject);
+    currentDrawingElement.current = null;
   };
 
   const zoomStage = (e: KonvaEventObject<WheelEvent>, scale: number) => {
@@ -144,27 +179,16 @@ export const useStageUtils = () => {
     if (e.evt.ctrlKey) {
       zoomStage(e, 1.1);
     }
-  }
+  };
 
   const deleteSelectedObject = useCallback(() => {
-    if (storeSelectedObject) {
-      switch (storeSelectedObject.type) {
-        case "Frame":
-          deleteStoreFrame(storeSelectedObject.id);
-          break;
-        case "Image":
-          break;
-        case "Text":
-          break;
-        case "Rectangle":
-          break;
-        case "Group":
-          break;
-        default:
-          break;
-      }
+    if (!storeSelectedObject) return;
+    if (storeSelectedObject.type === "Frame") {
+      deleteStoreFrame(storeSelectedObject.id);
+    } else if (storeSelectedObject.parentID) {
+      deleteElement(storeSelectedObject.parentID, storeSelectedObject.id);
     }
-  }, [storeSelectedObject, deleteStoreFrame]);
+  }, [storeSelectedObject, deleteStoreFrame, deleteElement]);
 
   return {
     handleStageOnMouseDown,

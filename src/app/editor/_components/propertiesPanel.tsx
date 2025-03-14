@@ -4,15 +4,28 @@ import { useFrameStore, useEditorStore } from "../store";
 export function PropertiesPanel() {
   const selectedObject = useEditorStore((state) => state.selectedObject);
   const updateFrame = useFrameStore((state) => state.updateFrame);
-
+  const updateElement = useFrameStore((state) => state.updateElement);
+  
   if (!selectedObject) {
     return null;
   }
 
+  const setValue = (property: string, value: number) => {
+    if (selectedObject.type === "Frame") {
+      updateFrame({...selectedObject, [property]: value});
+    } else if (selectedObject.parentID) {
+      updateElement(selectedObject.parentID, {
+        ...selectedObject,
+        [property]: value,
+      });
+    }
+
+  };
+
   return (
     <div className="sidepanel flex-1">
       <div className="px-3 pb-3 pt-3 text-sm font-bold">
-        {selectedObject ? selectedObject?.type : "No object is selected"}
+        {selectedObject.type}
       </div>
       <div className="px-3 pb-1 text-xs font-medium text-neutral-400">
         Position
@@ -20,15 +33,15 @@ export function PropertiesPanel() {
       <div className="flex gap-1.5 px-2.5">
         <PropertiesInput
           name="X"
-          setValue={(e) => {
-            updateFrame({ ...selectedObject, x: e });
+          setValue={(value) => {
+            setValue("x", value);
           }}
           value={selectedObject.x}
         />
         <PropertiesInput
           name="Y"
-          setValue={(e) => {
-            updateFrame({ ...selectedObject, y: e });
+          setValue={(value) => {
+            setValue("y", value);
           }}
           value={selectedObject.y}
         />
@@ -41,8 +54,8 @@ export function PropertiesPanel() {
           name="W"
           max={1000}
           min={100}
-          setValue={(e) => {
-            updateFrame({ ...selectedObject, width: e });
+          setValue={(value) => {
+            setValue("width", value);
           }}
           value={selectedObject.width}
         />
@@ -50,8 +63,8 @@ export function PropertiesPanel() {
           name="H"
           max={1000}
           min={100}
-          setValue={(e) => {
-            updateFrame({ ...selectedObject, height: e });
+          setValue={(value) => {
+            setValue("height", value);
           }}
           value={selectedObject.height}
         />

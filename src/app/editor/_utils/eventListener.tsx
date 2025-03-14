@@ -40,7 +40,7 @@ export function EventListener() {
         setStoreTool({ type: "hand", method: "toggle" });
       }
     };
-    
+
     window.addEventListener("mousedown", handleMouseDown);
     return () => {
       window.removeEventListener("mousedown", handleMouseDown);
@@ -53,7 +53,7 @@ export function EventListener() {
       setMouseButton(null);
       if (
         (storeTool.type === "hand" && storeTool.method === "toggle") ||
-        storeTool.type === "frame"
+        storeTool.type === "frame" || storeTool.type === "rectangle"
       ) {
         setStoreTool({ type: "move", method: "selected" });
       }
