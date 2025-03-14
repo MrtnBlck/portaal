@@ -6,11 +6,18 @@ import type { ObjectType } from "./page";
 type FrameStore = {
   frames: ObjectData[];
   setFrames: (newFrames: ObjectData[]) => void;
-  addFrame: (newFrame: ObjectData) => void;
+
+  getFrameIDs: () => string[];
   getFrame: (id: string) => ObjectData | undefined;
+  addFrame: (newFrame: ObjectData) => void;
   updateFrame: (updatedFrame: ObjectData) => void;
   deleteFrame: (id: string) => void;
+
+  getElementIDs: (frameID: string) => string[];
+  getElement: (frameID: string, elementID: string) => ObjectData | undefined;
+  addElement: (frameID: string, newElement: ObjectData) => void;
   updateElement: (frameId: string, updatedElement: ObjectData) => void;
+  deleteElement: (frameID: string, id: string) => void;
 };
 
 type EditorStore = {
@@ -58,43 +65,75 @@ const initialFrames: ObjectData[] = [
   },
 ];
 
-export const useFrameStore = create<FrameStore>((set) => ({
+// TODO: use immer
+// TODO: write getID's function
+
+export const useFrameStore = create<FrameStore>((set, get) => ({
   frames: initialFrames,
   setFrames: (newFrames) => set({ frames: newFrames }),
+  
+  getFrameIDs: () => get().frames.map((frame) => frame.id),
+  getFrame: (id) => get().frames.find((frame) => frame.id === id),
   addFrame: (newFrame) =>
     set((state) => ({ frames: [...state.frames, newFrame] })),
-  // TODO: test out setSelectedObject here
   updateFrame: (updatedFrame) =>
-    set((state) => {
-      const newFrames = state.frames.map((frame) =>
-        frame.id === updatedFrame.id ? updatedFrame : frame,
-      );
-      useEditorStore.setState({ selectedObject: updatedFrame });
-      return {
-        frames: newFrames,
-      };
-    }),
-  deleteFrame: (id) =>
-    set((state) => ({
-      frames: state.frames.filter((frame) => frame.id !== id),
-    })),
-  updateElement: (frameID, updatedElement) =>
     set((state) => ({
       frames: state.frames.map((frame) => {
-        if (frame.id !== frameID) {
-          return frame;
+        if (frame.id === updatedFrame.id) {
+          useEditorStore.setState({ selectedObject: updatedFrame });
+          return updatedFrame;
         }
-        useEditorStore.setState({ selectedObject: updatedElement });
-        return {
-          ...frame,
-          elements: frame.elements?.map((element) =>
-            element.id === updatedElement.id ? updatedElement : element,
-          ),
-        };
+        return frame;
       }),
     })),
-  getFrame: (id) => {
-    return initialFrames.find((frame) => frame.id === id);
+  deleteFrame: (id) => {
+    set((state) => ({
+      frames: state.frames.filter((frame) => frame.id !== id),
+    }))
+    useEditorStore.setState({ selectedObject: null });
+  },
+
+  getElementIDs: (frameID) => {
+    return get().getFrame(frameID)?.elements?.map((element) => element.id) ?? [];
+  },
+  getElement: (frameID, elementID) =>
+    get()
+      .getFrame(frameID)
+      ?.elements?.find((element) => element.id === elementID),
+  addElement: (frameID, newElement) => {
+    const frame = get().getFrame(frameID);
+    if (frame) {
+      const updatedFrame = {
+        ...frame,
+        elements: [...(frame.elements ?? []), newElement],
+      };
+      get().updateFrame(updatedFrame);
+      useEditorStore.setState({ selectedObject: newElement });
+    }
+  },
+  updateElement: (frameID, updatedElement) => {
+    const frame = get().getFrame(frameID);
+    if (frame) {
+      const updatedFrame = {
+        ...frame,
+        elements: frame.elements?.map((element) =>
+          element.id === updatedElement.id ? updatedElement : element,
+        ),
+      };
+      get().updateFrame(updatedFrame);
+      useEditorStore.setState({ selectedObject: updatedElement });
+    }
+  },
+  deleteElement: (frameID, id) => {
+    const frame = get().getFrame(frameID);
+    if (frame) {
+      const updatedFrame = {
+        ...frame,
+        elements: frame.elements?.filter((element) => element.id !== id),
+      };
+      get().updateFrame(updatedFrame);
+      useEditorStore.setState({ selectedObject: frame });
+    }
   },
 }));
 

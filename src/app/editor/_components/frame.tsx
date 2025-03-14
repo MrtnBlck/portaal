@@ -7,7 +7,8 @@ import type { ObjectData } from "../page";
 import { useFrameStore, useEditorStore } from "../store";
 import { Element } from "./element";
 
-interface RectProps extends Omit<FrameProps, "stageScale" | "draggable"> {
+interface RectProps {
+  frame: ObjectData;
   fill?: string;
   isSelected: boolean;
   setSelectedObject: () => void;
@@ -15,10 +16,8 @@ interface RectProps extends Omit<FrameProps, "stageScale" | "draggable"> {
   inverseScale: number;
 }
 
-//TODO: New structure: Layer(Group[draggable](Text, RectFrame, Group(Content), Transformer))
-
 interface FrameProps {
-  frame: ObjectData;
+  ID: string;
 }
 
 function FrameRect({
@@ -133,19 +132,15 @@ function FrameRect({
   );
 }
 
-export function Frame({ frame }: FrameProps) {
+export function Frame({ ID }: FrameProps) {
+  const getFrame = useFrameStore((state) => state.getFrame);
+  const frame = getFrame(ID);
   const stageScale = useEditorStore((state) => state.stageScale);
   const updateFrame = useFrameStore((state) => state.updateFrame);
   const draggable = useEditorStore((state) => state.tool.type === "move");
   const tool = useEditorStore((state) => state.tool);
   const setStoreSelectedObject = useEditorStore(
     (state) => state.setSelectedObject,
-  );
-  const setSelectedObject = useCallback(() => {
-    if (tool.type === "move") setStoreSelectedObject(frame);
-  }, [tool.type, frame, setStoreSelectedObject]);
-  const isSelected = useEditorStore(
-    (state) => state.selectedObject?.id === frame.id,
   );
   const inverseScale = 1 / stageScale;
   const groupRef = useRef<Konva.Group>(null);
@@ -156,6 +151,16 @@ export function Frame({ frame }: FrameProps) {
     groupRef.current?.x(0);
     groupRef.current?.y(0);
   }, [frame]);
+
+  const setSelectedObject = useCallback(() => {
+    if (tool.type === "move" && frame) setStoreSelectedObject(frame);
+  }, [tool.type, frame, setStoreSelectedObject]);
+
+  const isSelected = useEditorStore(
+    (state) => state.selectedObject?.id === frame?.id,
+  );
+
+  if (!frame) return null;
 
   return (
     <Layer id="myLayer">
