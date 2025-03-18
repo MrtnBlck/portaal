@@ -35,9 +35,9 @@ export function PropertiesInput({name, value, setValue, min, max}: propertiesInp
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setInputValue(value);
     const regex = /^[0-9]*$/;
     if (regex.test(value)) {
+      setInputValue(value);
     }
   };
 

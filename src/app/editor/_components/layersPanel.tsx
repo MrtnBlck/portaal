@@ -29,13 +29,13 @@ export function LayersPanel() {
             key={element.id}
             className={
               element.id === selectedObject.id
-                ? "rounded-md bg-white/5 px-2.5 py-1.5 text-xs text-white"
-                : "rounded-md px-2.5 py-1.5 text-xs text-neutral-400 hover:bg-white hover:bg-opacity-5"
+                ? "rounded-md bg-white/5 px-2.5 py-1.5 text-xs text-white overflow-ellipsis overflow-hidden whitespace-nowrap"
+                : "rounded-md px-2.5 py-1.5 text-xs text-neutral-400 hover:bg-white hover:bg-opacity-5 overflow-ellipsis overflow-hidden whitespace-nowrap"
             }
             onClick={() => setSelectedObject(element)}
           >
             <span className="pr-2 font-bold">{element.type[0]}</span>
-            {element.name}
+            {element.type === "Text" && element.textValue ? element.textValue : element.name}
           </div>
         ))}
         {/* <div className="inline-flex gap-2 rounded-md px-2.5 py-1.5 text-xs text-neutral-400 hover:bg-white hover:bg-opacity-5">

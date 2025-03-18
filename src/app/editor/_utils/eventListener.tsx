@@ -53,7 +53,7 @@ export function EventListener() {
       setMouseButton(null);
       if (
         (storeTool.type === "hand" && storeTool.method === "toggle") ||
-        storeTool.type === "frame" || storeTool.type === "rectangle"
+        storeTool.type === "frame" || storeTool.type === "rectangle" || storeTool.type === "text"
       ) {
         setStoreTool({ type: "move", method: "selected" });
       }
@@ -105,6 +105,9 @@ export function EventListener() {
           break;
         case "KeyR":
           setStoreTool({ type: "rectangle", method: "selected" });
+          break;
+        case "KeyT":
+          setStoreTool({ type: "text", method: "selected" });
           break;
         case "Delete":
           deleteSelectedObject();

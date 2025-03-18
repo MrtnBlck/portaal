@@ -18,6 +18,8 @@ type FrameStore = {
   addElement: (frame: ObjectData, newElement: ObjectData) => void;
   updateElement: (frameId: string, updatedElement: ObjectData, triggerSelect?: boolean) => void;
   deleteElement: (frameID: string, id: string) => void;
+
+  updateTextValue: (frameID: string, elementID: string, textValue: string) => void;
 };
 
 type EditorStore = {
@@ -61,12 +63,22 @@ const initialFrames: ObjectData[] = [
         type: "Rectangle" as ObjectType,
         parentID: frameID,
       } as ObjectData,
+      {
+        id: uuidv4(),
+        name: "Text 0",
+        width: 100,
+        height: 50,
+        x: 250,
+        y: 250,
+        type: "Text" as ObjectType,
+        parentID: frameID,
+        textValue: "Hello, World!",
+      } as ObjectData,
     ] as ObjectData[],
   },
 ];
 
 // TODO: use immer
-// TODO: write getID's function
 
 export const useFrameStore = create<FrameStore>((set, get) => ({
   frames: initialFrames,
@@ -130,6 +142,13 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
         elements: frame.elements?.filter((element) => element.id !== id),
       };
       get().updateFrame(updatedFrame);
+    }
+  },
+  updateTextValue: (frameID, elementID, textValue) => {
+    const element = get().getElement(frameID, elementID);
+    if (element && element.type === "Text") {
+      const updatedElement = { ...element, textValue: textValue };
+      get().updateElement(frameID, updatedElement);
     }
   },
 }));

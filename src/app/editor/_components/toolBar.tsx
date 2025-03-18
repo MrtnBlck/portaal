@@ -7,7 +7,7 @@ import {
 
 import { Toggle } from "~/components/ui/toggle";
 import { useEditorStore } from "../store";
-import { Hand, MousePointer2, Frame, Square, Circle, Type } from "lucide-react";
+import { Hand, MousePointer2, Frame, Square, Circle, Type, Image } from "lucide-react";
 
 interface ToolBarProps {
   className: string;
@@ -96,7 +96,7 @@ export function ToolBar({ className }: ToolBarProps) {
             </p>
           </TooltipContent>
         </Tooltip>
-        <Tooltip>
+        {/* <Tooltip>
           <TooltipTrigger asChild>
             <span>
               <Toggle
@@ -116,12 +116,14 @@ export function ToolBar({ className }: ToolBarProps) {
             </p>
           </TooltipContent>
         </Tooltip>
-        {/* <Tooltip>
+        <Tooltip>
           <TooltipTrigger asChild>
             <span>
               <Toggle
                 pressed={tool === "wip"}
-                onPressedChange={() => setTool("move")}
+                onPressedChange={() =>
+                  setTool({ type: "wip", method: "selected" })
+                }
                 disabled
               >
                 <Image />
@@ -138,11 +140,10 @@ export function ToolBar({ className }: ToolBarProps) {
           <TooltipTrigger asChild>
             <span>
               <Toggle
-                pressed={tool === "wip"}
+                pressed={tool === "text"}
                 onPressedChange={() =>
-                  setTool({ type: "wip", method: "selected" })
+                  setTool({ type: "text", method: "selected" })
                 }
-                disabled
               >
                 <Type />
               </Toggle>
