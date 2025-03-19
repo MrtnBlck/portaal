@@ -182,7 +182,8 @@ export function Element({ element, frameXY }: ElementProps) {
       trRef.current.getLayer()?.batchDraw();
     }
   }, [isSelected, elementRef]);
-  
+
+  // Breaks element drawing, hotfixed with text drawing indicator
   const commonProps = useMemo<CommonProps>(() => {
     return {
       id: element.id,
@@ -238,7 +239,7 @@ export function Element({ element, frameXY }: ElementProps) {
   return (
     <>
       {element.type === "Rectangle" && (
-        <Rect {...commonProps} ref={setElementRef} />
+        <Rect {...commonProps} ref={setElementRef}/>
       )}
       {element.type === "Text" && (
         <ElementText
@@ -268,7 +269,7 @@ export function Element({ element, frameXY }: ElementProps) {
           enabledAnchors={element.beingEdited ? [] : undefined}
         />
       )}
-      {element.type === "Text" && element.beingDrawn && (
+      {element.beingDrawn && (
         <Rect
           x={element.x + frameXY.x}
           y={element.y + frameXY.y}
