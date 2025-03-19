@@ -20,6 +20,7 @@ type FrameStore = {
   deleteElement: (frameID: string, id: string) => void;
 
   updateTextValue: (frameID: string, elementID: string, textValue: string) => void;
+  toggleTextEditing: (frameID: string, elementID: string, mode: boolean) => void;
 };
 
 type EditorStore = {
@@ -45,34 +46,15 @@ const initialFrames: ObjectData[] = [
     elements: [
       {
         id: uuidv4(),
-        name: "Rectangle 0",
-        width: 50,
-        height: 50,
-        x: 50,
-        y: 50,
-        type: "Rectangle" as ObjectType,
-        parentID: frameID,
-      } as ObjectData,
-      {
-        id: uuidv4(),
-        name: "Rectangle 1",
-        width: 50,
-        height: 50,
-        x: 150,
-        y: 150,
-        type: "Rectangle" as ObjectType,
-        parentID: frameID,
-      } as ObjectData,
-      {
-        id: uuidv4(),
         name: "Text 0",
         width: 100,
         height: 50,
-        x: 250,
-        y: 250,
+        x: 50,
+        y: 50,
         type: "Text" as ObjectType,
         parentID: frameID,
-        textValue: "Hello, World!",
+        textValue: "Üdv!👋",
+        beingEdited: false,
       } as ObjectData,
     ] as ObjectData[],
   },
@@ -148,6 +130,13 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
     const element = get().getElement(frameID, elementID);
     if (element && element.type === "Text") {
       const updatedElement = { ...element, textValue: textValue };
+      get().updateElement(frameID, updatedElement);
+    }
+  },
+  toggleTextEditing: (frameID, elementID, mode) => {
+    const element = get().getElement(frameID, elementID);
+    if (element && element.type === "Text") {
+      const updatedElement = { ...element, beingEdited: mode };
       get().updateElement(frameID, updatedElement);
     }
   },

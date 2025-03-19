@@ -28,6 +28,7 @@ export interface ObjectData {
   parentID?: string;
   textValue?: string;
   beingDrawn?: boolean;
+  beingEdited?: boolean;
 }
 
 export default function EditorPage() {

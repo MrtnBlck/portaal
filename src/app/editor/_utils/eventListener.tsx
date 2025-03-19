@@ -9,6 +9,7 @@ export function EventListener() {
   const [mouseButton, setMouseButton] = useState<number | null>(null);
   const storeTool = useEditorStore((state) => state.tool);
   const setStoreTool = useEditorStore((state) => state.setTool);
+  const selectedObject = useEditorStore((state) => state.selectedObject);
   const { deleteSelectedObject } = useStageUtils();
 
   // wheel & contextmenu
@@ -87,6 +88,7 @@ export function EventListener() {
 
   // keydown
   useEffect(() => {
+    if (selectedObject?.beingEdited) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.code) {
         case "Space":
@@ -121,7 +123,7 @@ export function EventListener() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [storeTool, setStoreTool, deleteSelectedObject]);
+  }, [storeTool, setStoreTool, deleteSelectedObject, selectedObject?.beingEdited]);
 
   return null;
 }

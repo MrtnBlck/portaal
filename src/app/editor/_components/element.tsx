@@ -13,15 +13,16 @@ interface ElementProps {
 }
 
 interface ElementTextProps {
+  isSelected: boolean;
   element: ObjectData;
   props: CommonProps;
   elementRef: Konva.Text;
   setElementRef: (ref: Konva.Text) => void;
-  isEditing: boolean;
-  setIsEditing: (editing: boolean) => void;
 }
 
 interface CommonProps {
+  id: string;
+  parentID: string | undefined;
   x: number;
   y: number;
   width: number;
@@ -36,20 +37,22 @@ interface CommonProps {
 }
 
 function ElementText({
+  isSelected,
   element,
   props,
   elementRef,
   setElementRef,
-  isEditing,
-  setIsEditing,
 }: ElementTextProps) {
   const isFirefox = navigator.userAgent.toLowerCase().includes("firefox");
   const updateTextValue = useFrameStore((state) => state.updateTextValue);
+  const deleteElement = useFrameStore((state) => state.deleteElement);
+  const toggleTextEditing = useFrameStore((state) => state.toggleTextEditing);
+
   const style = useMemo(() => {
     if (!elementRef) return undefined;
     return {
-      width: `${elementRef.width() - elementRef.padding() * 2}px`,
-      height: `${elementRef.height() - elementRef.padding() * 2 + 5}px`,
+      width: `${element.width - elementRef.padding() * 2}px`,
+      height: `${element.height - elementRef.padding() * 2 + 5}px`,
       fontSize: `${elementRef.fontSize()}px`,
       border: "none",
       padding: "0px",
@@ -65,32 +68,62 @@ function ElementText({
       marginTop: isFirefox ? "-4px" : "0px",
       overflow: "hidden",
     };
-  }, [elementRef?.width(), elementRef?.height(), isFirefox]);
+  }, [element, elementRef, isFirefox]);
 
-  const [inputValue, setInputValue] = useState(element.textValue!);
+  const [textAreaRef, setTextAreaRef] = useState<HTMLTextAreaElement | null>(
+    null,
+  );
 
+  // Focus & select upon switching to edit mode
+  useEffect(() => {
+    if (element.beingEdited && textAreaRef) {
+      textAreaRef.focus();
+      textAreaRef.select();
+    }
+  }, [element.beingEdited, textAreaRef]);
+
+  // After drawing a text element switch to edit mode
+  useEffect(() => {
+    if (element.beingDrawn !== undefined && !element.beingDrawn) {
+      toggleTextEditing(element.parentID!, element.id, true);
+    }
+  }, [element.beingDrawn, toggleTextEditing, element.parentID, element.id]);
+
+  // If the element gets unselected, turn off beingEdited
+  useEffect(() => {
+    if (!isSelected && element.beingEdited) {
+      toggleTextEditing(element.parentID!, element.id, false);
+    }
+  }, [isSelected, element, toggleTextEditing]);
+
+  // Handle edit mode turn off outside of this function, so we can set the proper behavior
   const handleOnBlur = () => {
     if (!element.parentID) return;
-    setIsEditing(false);
-    if (inputValue !== element.textValue) {
+    if (!textAreaRef) return;
+    const inputValue = textAreaRef.value;
+    if (inputValue !== element.textValue && inputValue !== "") {
       updateTextValue(element.parentID, element.id, inputValue);
+    } else if (inputValue === "") {
+      // remove if empty
+      deleteElement(element.parentID, element.id);
     }
   };
 
   return (
     <>
-      {isEditing && (
+      {element.beingEdited && (
         <Html
           groupProps={{ x: props.x, y: props.y }}
           divProps={{ style: { opacity: 1 } }}
         >
           <textarea
-            value={inputValue}
+            defaultValue={element.textValue}
+            ref={setTextAreaRef}
             style={style}
             onBlur={handleOnBlur}
-            onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Escape") {
+                toggleTextEditing(element.parentID!, element.id, false);
                 handleOnBlur();
               }
             }}
@@ -114,8 +147,10 @@ function ElementText({
           elementRef.scaleX(1);
           elementRef.scaleY(1);
         }}
-        onDblClick={() => setIsEditing(true)}
-        visible={!isEditing}
+        onDblClick={() =>
+          toggleTextEditing(element.parentID!, element.id, true)
+        }
+        visible={!element.beingEdited}
         {...props}
       />
     </>
@@ -140,65 +175,65 @@ export function Element({ element, frameXY }: ElementProps) {
     null,
   );
 
+  // Attach transformer to the element
   useEffect(() => {
     if (isSelected && trRef.current && elementRef) {
       trRef.current.nodes([elementRef]);
       trRef.current.getLayer()?.batchDraw();
     }
   }, [isSelected, elementRef]);
-
-  const [isEditing, setIsEditing] = useState(false);
-  useEffect(() => {
-    if (!isSelected && isEditing) {
-      setIsEditing(false);
-    }
-  }, [isSelected, isEditing]);
-
-  useEffect(() => {
-    if (!element.beingDrawn && element.type === "Text") {
-      setIsEditing(true);
-    }
-  }, [element.beingDrawn]);
-
-  const commonProps: CommonProps = {
-    x: element.x + frameXY.x,
-    y: element.y + frameXY.y,
-    width: element.width,
-    height: element.height,
-    fill: "black",
-    draggable: draggable,
-    onClick: setSelectedObject,
-    onTap: setSelectedObject,
-    onDragStart: setSelectedObject,
-    onTransformEnd: (e: Konva.KonvaEventObject<Event>) => {
-      e.cancelBubble = true;
-      if (!elementRef || !element.parentID) return;
-      const scaleX = elementRef.scaleX();
-      const scaleY = elementRef.scaleY();
-      const size = {
-        width: Math.round(Math.max(5, elementRef.width() * scaleX)),
-        height: Math.round(Math.max(5, elementRef.height() * scaleY)),
-      };
-      elementRef.setSize(size);
-      elementRef.scaleX(1);
-      elementRef.scaleY(1);
-      updateElement(element.parentID, {
-        ...element,
-        x: Math.round(elementRef.x() - frameXY.x),
-        y: Math.round(elementRef.y() - frameXY.y),
-        ...size,
-      });
-    },
-    onDragEnd: (e: Konva.KonvaEventObject<Event>) => {
-      e.cancelBubble = true;
-      if (!elementRef || !element.parentID) return;
-      updateElement(element.parentID, {
-        ...element,
-        x: Math.round(elementRef.x() - frameXY.x),
-        y: Math.round(elementRef.y() - frameXY.y),
-      });
-    },
-  };
+  
+  const commonProps = useMemo<CommonProps>(() => {
+    return {
+      id: element.id,
+      parentID: element.parentID,
+      x: element.x + frameXY.x,
+      y: element.y + frameXY.y,
+      width: element.width,
+      height: element.height,
+      fill: "black",
+      draggable: draggable,
+      onClick: setSelectedObject,
+      onTap: setSelectedObject,
+      onDragStart: setSelectedObject,
+      onTransformEnd: (e: Konva.KonvaEventObject<Event>) => {
+        e.cancelBubble = true;
+        if (!elementRef || !element.parentID) return;
+        const scaleX = elementRef.scaleX();
+        const scaleY = elementRef.scaleY();
+        const size = {
+          width: Math.round(Math.max(5, elementRef.width() * scaleX)),
+          height: Math.round(Math.max(5, elementRef.height() * scaleY)),
+        };
+        elementRef.setSize(size);
+        elementRef.scaleX(1);
+        elementRef.scaleY(1);
+        updateElement(element.parentID, {
+          ...element,
+          x: Math.round(elementRef.x() - frameXY.x),
+          y: Math.round(elementRef.y() - frameXY.y),
+          ...size,
+        });
+      },
+      onDragEnd: (e: Konva.KonvaEventObject<Event>) => {
+        e.cancelBubble = true;
+        if (!elementRef || !element.parentID) return;
+        updateElement(element.parentID, {
+          ...element,
+          x: Math.round(elementRef.x() - frameXY.x),
+          y: Math.round(elementRef.y() - frameXY.y),
+        });
+      },
+    };
+  }, [
+    draggable,
+    element,
+    elementRef,
+    frameXY.x,
+    frameXY.y,
+    setSelectedObject,
+    updateElement,
+  ]);
 
   return (
     <>
@@ -207,10 +242,9 @@ export function Element({ element, frameXY }: ElementProps) {
       )}
       {element.type === "Text" && (
         <ElementText
+          isSelected={isSelected}
           element={element}
           props={commonProps}
-          isEditing={isEditing}
-          setIsEditing={setIsEditing}
           elementRef={elementRef as Konva.Text}
           setElementRef={setElementRef}
         />
@@ -231,18 +265,17 @@ export function Element({ element, frameXY }: ElementProps) {
           onDragEnd={(e) => {
             e.cancelBubble = true;
           }}
-          enabledAnchors={isEditing ? [] : undefined}
+          enabledAnchors={element.beingEdited ? [] : undefined}
         />
       )}
-      {element.beingDrawn && (
+      {element.type === "Text" && element.beingDrawn && (
         <Rect
           x={element.x + frameXY.x}
           y={element.y + frameXY.y}
           width={element.width}
           height={element.height}
-          stroke="#70AFDC"
+          stroke="#19AAFF"
           strokeWidth={1}
-          dash={[5, 10]}
         />
       )}
     </>

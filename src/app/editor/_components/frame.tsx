@@ -33,6 +33,7 @@ function FrameRect({
   //const isTransformingRef = useRef(false);
   const [isTransforming, setIsTransforming] = useState(false);
   const updateFrame = useFrameStore((state) => state.updateFrame);
+  const toggleTextEditing = useFrameStore((state) => state.toggleTextEditing);
   const [frameXY, setFrameXY] = useState({ x: frame.x, y: frame.y });
   const isSelected = selectedObject?.id === frame.id;
 
@@ -53,8 +54,20 @@ function FrameRect({
         width={frame.width}
         height={frame.height}
         fill={fill}
-        onClick={() => setSelectedObject()}
-        onTap={() => setSelectedObject()}
+        onClick={() => {
+          if (selectedObject?.beingEdited) {
+            toggleTextEditing(selectedObject.parentID!, selectedObject.id, false);
+            return;
+          }
+          setSelectedObject();
+        }}
+        onTap={() => {
+          if (selectedObject?.beingEdited) {
+            toggleTextEditing(selectedObject.parentID!, selectedObject.id, false);
+            return;
+          }
+          setSelectedObject();
+        }}
         ref={shapeRef}
         onTransformEnd={() => {
           const node = shapeRef.current;

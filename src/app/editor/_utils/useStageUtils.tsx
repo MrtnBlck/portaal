@@ -26,6 +26,7 @@ export const useStageUtils = () => {
   const currentDrawingElement = useRef<ObjectData | null>(null);
   const updateElement = useFrameStore((state) => state.updateElement);
   const deleteElement = useFrameStore((state) => state.deleteElement);
+  const toggleTextEditing = useFrameStore((state) => state.toggleTextEditing);
 
   const drawingPositions = useRef<DrawingPositions>({ x: 0, y: 0 });
 
@@ -33,6 +34,10 @@ export const useStageUtils = () => {
     // deselect when clicked on empty area
     const clickedOnEmpty = e.target === e.target.getStage();
     if (clickedOnEmpty) {
+      if (storeSelectedObject?.beingEdited) {
+        toggleTextEditing(storeSelectedObject.parentID!, storeSelectedObject.id, false);
+        return;
+      }
       setStoreSelectedObject(null);
     }
   };
@@ -73,7 +78,7 @@ export const useStageUtils = () => {
     }
     const targetAttrs = e.target.attrs as Konva.NodeConfig;
     if (!targetAttrs) return;
-    const frameID = targetAttrs.id!;
+    const frameID = (targetAttrs.parentID === undefined ? targetAttrs.id! : targetAttrs.parentID) as string;
     if (!frameID) return;
     const frame = getFrame(frameID);
     if (!frame) return;
@@ -123,9 +128,8 @@ export const useStageUtils = () => {
     const pos = stage.getRelativePointerPosition();
     if (!pos) return;
     const newObject = currentDrawingElement.current;
-    if (!newObject || !newObject.beingDrawn) return;
+    if (!newObject?.beingDrawn) return;
     const frame = getFrame(newObject.parentID ?? "");
-
     const x1 = drawingPositions.current.x;
     const y1 = drawingPositions.current.y;
     const x2 = pos.x - (frame ? frame.x : 0);
@@ -134,7 +138,6 @@ export const useStageUtils = () => {
     newObject.y = Math.round(Math.min(y1, y2));
     newObject.width = Math.round(Math.abs(x2 - x1));
     newObject.height = Math.round(Math.abs(y2 - y1));
-
     currentDrawingElement.current = newObject;
     if (storeTool.type === "frame") {
       updateStoreFrame(newObject, false);
@@ -145,7 +148,7 @@ export const useStageUtils = () => {
 
   const handleStageOnMouseUp = () => {
     const newObject = currentDrawingElement.current;
-    if (!newObject || !newObject.beingDrawn) return;
+    if (!newObject?.beingDrawn) return;
     if (
       storeTool.type !== "frame" &&
       storeTool.type !== "rectangle" &&

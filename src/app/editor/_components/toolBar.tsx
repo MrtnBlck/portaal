@@ -7,7 +7,7 @@ import {
 
 import { Toggle } from "~/components/ui/toggle";
 import { useEditorStore } from "../store";
-import { Hand, MousePointer2, Frame, Square, Circle, Type, Image } from "lucide-react";
+import { Hand, MousePointer2, Frame, Square, Type } from "lucide-react";
 
 interface ToolBarProps {
   className: string;
