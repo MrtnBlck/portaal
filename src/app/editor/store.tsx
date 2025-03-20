@@ -41,16 +41,15 @@ type EditorStore = {
 };
 
 // Temporary initial data
-const frameID1 = uuidv4();
-const frameID2 = uuidv4();
+const frameID = uuidv4();
 const initialFrames: ObjectData[] = [
   {
-    id: frameID1,
+    id: frameID,
     name: "Frame 0",
-    width: 300,
-    height: 300,
-    x: 300,
-    y: 200,
+    width: 310,
+    height: 90,
+    x: 30,
+    y: 250,
     type: "Frame" as ObjectType,
     elements: [
       {
@@ -59,36 +58,25 @@ const initialFrames: ObjectData[] = [
         width: 500,
         height: 300,
         x: 0,
-        y: 0,
+        y: 100,
         type: "Image" as ObjectType,
-        parentID: frameID1,
+        parentID: frameID,
         image: null,
       } as ObjectData,
-    ] as ObjectData[],
-  },
-  {
-    id: frameID2,
-    name: "Frame 1",
-    width: 400,
-    height: 115,
-    x: 300,
-    y: 50,
-    type: "Frame" as ObjectType,
-    elements: [
       {
         id: uuidv4(),
         name: "Text 0",
-        width: 200,
-        height: 73,
-        x: 50,
-        y: 30,
+        width: 270,
+        height: 50,
+        x: 20,
+        y: 20,
         type: "Text" as ObjectType,
-        parentID: frameID2,
-        textValue: "Üdv!👋 \nKatt a másik Frame-re \nés frissítd az oldalt :)",
+        parentID: frameID,
+        textValue: "Üdv!👋 \nKatt ide egy kis meglepiért! :3",
         beingEdited: false,
       } as ObjectData,
     ] as ObjectData[],
-  }
+  },
 ];
 
 export const useFrameStore = create<FrameStore>((set, get) => ({
