@@ -27,6 +27,10 @@ export const useStageUtils = () => {
   const updateElement = useFrameStore((state) => state.updateElement);
   const deleteElement = useFrameStore((state) => state.deleteElement);
   const toggleTextEditing = useFrameStore((state) => state.toggleTextEditing);
+  const uploadedImage = useEditorStore((state) => state.uploadedImage);
+  const removeUploadedImage = useEditorStore(
+    (state) => state.removeUploadedImage,
+  );
 
   const drawingPositions = useRef<DrawingPositions>({ x: 0, y: 0 });
 
@@ -35,7 +39,11 @@ export const useStageUtils = () => {
     const clickedOnEmpty = e.target === e.target.getStage();
     if (clickedOnEmpty) {
       if (storeSelectedObject?.beingEdited) {
-        toggleTextEditing(storeSelectedObject.parentID!, storeSelectedObject.id, false);
+        toggleTextEditing(
+          storeSelectedObject.parentID!,
+          storeSelectedObject.id,
+          false,
+        );
         return;
       }
       setStoreSelectedObject(null);
@@ -53,7 +61,6 @@ export const useStageUtils = () => {
     if (!stage) return;
     const pos = stage.getRelativePointerPosition();
     if (!pos) return;
-
     drawingPositions.current = {
       x: pos.x,
       y: pos.y,
@@ -78,10 +85,19 @@ export const useStageUtils = () => {
     }
     const targetAttrs = e.target.attrs as Konva.NodeConfig;
     if (!targetAttrs) return;
-    const frameID = (targetAttrs.parentID === undefined ? targetAttrs.id! : targetAttrs.parentID) as string;
+    const frameID = (
+      targetAttrs.parentID === undefined
+        ? targetAttrs.id!
+        : targetAttrs.parentID
+    ) as string;
     if (!frameID) return;
     const frame = getFrame(frameID);
-    if (!frame) return;
+    if (!frame) {
+      if (storeTool.type === "image") {
+        removeUploadedImage();
+      }
+      return;
+    }
     drawingPositions.current = {
       x: pos.x - frame.x,
       y: pos.y - frame.y,
@@ -98,7 +114,6 @@ export const useStageUtils = () => {
         y: pos.y - frame.y,
         type: "Rectangle" as ObjectType,
         parentID: frame.id,
-        beingDrawn: true,
       };
       addElement(frame, newRectangle);
       currentDrawingElement.current = newRectangle;
@@ -113,31 +128,55 @@ export const useStageUtils = () => {
         y: pos.y - frame.y,
         type: "Text" as ObjectType,
         parentID: frame.id,
-        beingDrawn: true,
       };
       addElement(frame, newText);
       currentDrawingElement.current = newText;
+    }
+    if (storeTool.type === "image" && uploadedImage) {
+      const newImage: ObjectData = {
+        id: uuidv4(),
+        name: frame.elements ? `Image ${frame.elements.length}` : "Image 0",
+        width: 1,
+        height: 1,
+        x: pos.x - frame.x,
+        y: pos.y - frame.y,
+        type: "Image" as ObjectType,
+        parentID: frame.id,
+        image: uploadedImage,
+      };
+      addElement(frame, newImage);
+      currentDrawingElement.current = newImage;
+      removeUploadedImage();
     }
   };
 
   const handleStageOnMouseMove = (
     e: KonvaEventObject<MouseEvent | TouchEvent>,
   ) => {
+    // Optimization idea: use seperate indicator for drawing, update element properties only on mouse up
     const stage = e.target.getStage();
     if (!stage) return;
     const pos = stage.getRelativePointerPosition();
     if (!pos) return;
     const newObject = currentDrawingElement.current;
-    if (!newObject?.beingDrawn) return;
+    if (!newObject) return;
     const frame = getFrame(newObject.parentID ?? "");
     const x1 = drawingPositions.current.x;
     const y1 = drawingPositions.current.y;
     const x2 = pos.x - (frame ? frame.x : 0);
     const y2 = pos.y - (frame ? frame.y : 0);
     newObject.x = Math.round(Math.min(x1, x2));
-    newObject.y = Math.round(Math.min(y1, y2));
     newObject.width = Math.round(Math.abs(x2 - x1));
-    newObject.height = Math.round(Math.abs(y2 - y1));
+    // calculate aspect ratio for images
+    if (newObject.type === "Image" && newObject.image) {
+      const ARwidth = newObject.image.width / newObject.image.height;
+      newObject.height = Math.round(newObject.width / ARwidth);
+      newObject.y = y2 < y1 ? y1 - newObject.height : y1;
+    } else {
+      newObject.y = Math.round(Math.min(y1, y2));
+      newObject.height = Math.round(Math.abs(y2 - y1));
+    }
+    newObject.beingDrawn = true;
     currentDrawingElement.current = newObject;
     if (storeTool.type === "frame") {
       updateStoreFrame(newObject, false);
@@ -148,21 +187,29 @@ export const useStageUtils = () => {
 
   const handleStageOnMouseUp = () => {
     const newObject = currentDrawingElement.current;
-    if (!newObject?.beingDrawn) return;
-    if (
-      storeTool.type !== "frame" &&
-      storeTool.type !== "rectangle" &&
-      storeTool.type !== "text"
-    )
-      return;
+    if (!newObject) return;
     if (storeTool.type === "frame") {
-      updateStoreFrame({ ...newObject, beingDrawn: false }, false);
-    } else if (newObject.parentID) {
-      updateElement(
-        newObject.parentID,
-        { ...newObject, beingDrawn: false },
-        false,
-      );
+      newObject.beingDrawn = false;
+      updateStoreFrame(newObject, false);
+    }
+    if (newObject.parentID) {
+      if (newObject.beingDrawn) {
+        newObject.beingDrawn = false;
+        updateElement(newObject.parentID, newObject, false);
+      } else {
+        // Set initial values if its not being drawn
+        if (newObject.type === "Image" && newObject.image) {
+          newObject.width = newObject.image.width;
+          newObject.height = newObject.image.height;
+          newObject.beingDrawn = false;
+          updateElement(newObject.parentID, newObject, false);
+        } else {
+          newObject.width = 100;
+          newObject.height = newObject.type === "Text" ? 25 : 100;
+          newObject.beingDrawn = false;
+          updateElement(newObject.parentID, newObject, false);
+        }
+      }
     }
     setStoreSelectedObject(newObject);
     currentDrawingElement.current = null;

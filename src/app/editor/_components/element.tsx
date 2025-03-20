@@ -3,23 +3,22 @@
 import type { ObjectData } from "../page";
 import type Konva from "konva";
 import { Html } from "react-konva-utils";
-import { Rect, Transformer, Text } from "react-konva";
+import { Rect, Transformer, Text, Image as KImage } from "react-konva";
 import { useEditorStore, useFrameStore } from "../store";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import useImage from "use-image";
 
 interface ElementProps {
   element: ObjectData;
   frameXY: { x: number; y: number };
 }
-
 interface ElementTextProps {
+  props: CommonProps;
   isSelected: boolean;
   element: ObjectData;
-  props: CommonProps;
   elementRef: Konva.Text;
   setElementRef: (ref: Konva.Text) => void;
 }
-
 interface CommonProps {
   id: string;
   parentID: string | undefined;
@@ -171,9 +170,10 @@ export function Element({ element, frameXY }: ElementProps) {
   const updateElement = useFrameStore((state) => state.updateElement);
   const draggable = useEditorStore((state) => state.tool.type === "move");
   const trRef = useRef<Konva.Transformer>(null);
-  const [elementRef, setElementRef] = useState<Konva.Rect | Konva.Text | null>(
+  const [elementRef, setElementRef] = useState<Konva.Rect | Konva.Text | Konva.Image | null>(
     null,
   );
+  const [image] = useImage("https://cataas.com/cat");
 
   // Attach transformer to the element
   useEffect(() => {
@@ -241,6 +241,12 @@ export function Element({ element, frameXY }: ElementProps) {
       {element.type === "Rectangle" && (
         <Rect {...commonProps} ref={setElementRef}/>
       )}
+      {element.type === "Image" && element.image && (
+        <KImage image={element.image} ref={setElementRef} {...commonProps} fill=""/>
+      )}
+      {element.type === "Image" && !element.image && (
+        <KImage image={image} ref={setElementRef} {...commonProps} fill="" width={image?.width} height={image?.height}/>
+      )}
       {element.type === "Text" && (
         <ElementText
           isSelected={isSelected}
@@ -254,7 +260,7 @@ export function Element({ element, frameXY }: ElementProps) {
         <Transformer
           ref={trRef}
           flipEnabled={false}
-          keepRatio={false}
+          keepRatio={element.type === "Image"}
           // TODO: enable later
           rotateEnabled={false}
           boundBoxFunc={(oldBox, newBox) => {

@@ -54,7 +54,7 @@ export function EventListener() {
       setMouseButton(null);
       if (
         (storeTool.type === "hand" && storeTool.method === "toggle") ||
-        storeTool.type === "frame" || storeTool.type === "rectangle" || storeTool.type === "text"
+        storeTool.type === "frame" || storeTool.type === "rectangle" || storeTool.type === "text" || storeTool.type === "image"
       ) {
         setStoreTool({ type: "move", method: "selected" });
       }
@@ -110,6 +110,9 @@ export function EventListener() {
           break;
         case "KeyT":
           setStoreTool({ type: "text", method: "selected" });
+          break;
+        case "KeyI":
+          setStoreTool({ type: "image", method: "selected" });
           break;
         case "Delete":
           deleteSelectedObject();

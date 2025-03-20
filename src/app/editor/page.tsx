@@ -10,7 +10,7 @@ import { useStageUtils } from "./_utils/useStageUtils";
 import { EventListener } from "./_utils/eventListener";
 
 export type ToolState = {
-  type: "move" | "hand" | "frame" | "rectangle" | "text" | "wip";
+  type: "move" | "hand" | "frame" | "rectangle" | "text" | "image" | "wip";
   method: "selected" | "toggle";
 };
 
@@ -29,6 +29,7 @@ export interface ObjectData {
   textValue?: string;
   beingDrawn?: boolean;
   beingEdited?: boolean;
+  image?: HTMLImageElement | null;
 }
 
 export default function EditorPage() {

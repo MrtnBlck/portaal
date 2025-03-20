@@ -7,7 +7,8 @@ import {
 
 import { Toggle } from "~/components/ui/toggle";
 import { useEditorStore } from "../store";
-import { Hand, MousePointer2, Frame, Square, Type } from "lucide-react";
+import { Hand, MousePointer2, Frame, Square, Type, Image as ImgIcon } from "lucide-react";
+import { useRef } from "react";
 
 interface ToolBarProps {
   className: string;
@@ -16,6 +17,28 @@ interface ToolBarProps {
 export function ToolBar({ className }: ToolBarProps) {
   const tool = useEditorStore((state) => state.tool.type);
   const setTool = useEditorStore((state) => state.setTool);
+  const addUploadedImage = useEditorStore((state) => state.addUploadedImage);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      console.log("File upload was cancelled.");
+      return;
+    }
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          addUploadedImage(img);
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+    e.target.value = "";
+  };
 
   return (
     <div className={className}>
@@ -96,37 +119,17 @@ export function ToolBar({ className }: ToolBarProps) {
             </p>
           </TooltipContent>
         </Tooltip>
-        {/* <Tooltip>
-          <TooltipTrigger asChild>
-            <span>
-              <Toggle
-                pressed={tool === "wip"}
-                onPressedChange={() =>
-                  setTool({ type: "wip", method: "selected" })
-                }
-                disabled
-              >
-                <Circle />
-              </Toggle>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>
-              Circle - <strong>C</strong>
-            </p>
-          </TooltipContent>
-        </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
             <span>
               <Toggle
-                pressed={tool === "wip"}
-                onPressedChange={() =>
-                  setTool({ type: "wip", method: "selected" })
-                }
-                disabled
+                pressed={tool === "image"}
+                onPressedChange={() => {
+                  setTool({ type: "image", method: "selected" });
+                  fileInputRef.current?.click();
+                }}
               >
-                <Image />
+                <ImgIcon />
               </Toggle>
             </span>
           </TooltipTrigger>
@@ -135,7 +138,7 @@ export function ToolBar({ className }: ToolBarProps) {
               Image - <strong>I</strong>
             </p>
           </TooltipContent>
-        </Tooltip> */}
+        </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
             <span>
@@ -151,11 +154,18 @@ export function ToolBar({ className }: ToolBarProps) {
           </TooltipTrigger>
           <TooltipContent>
             <p>
-              Image - <strong>I</strong>
+              Text - <strong>T</strong>
             </p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        onChange={handleFileChange}
+      />
     </div>
   );
 }

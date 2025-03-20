@@ -29,6 +29,7 @@
 - D&D kit
 - UseImperativeHandle
 - ForwardRef
+- Immer
 
 ## Features Categorized by Importance Level
 
