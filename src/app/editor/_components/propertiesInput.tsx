@@ -19,13 +19,12 @@ export function PropertiesInput({name, value, setValue, min, max}: propertiesInp
   }, [value]);
 
   const handleOnBlur = () => {
-    const value = inputValue;
-    if (value !== "") {
+    if (inputValue !== "") {
       let newValue;
       if (min !== undefined && max !== undefined) {
-        newValue = Math.min(Math.max(parseInt(value), min), max);
+        newValue = Math.min(Math.max(parseInt(inputValue), min), max);
       } else {
-        newValue = parseInt(value);
+        newValue = parseInt(inputValue);
       }
       setValue(newValue);
     } else {

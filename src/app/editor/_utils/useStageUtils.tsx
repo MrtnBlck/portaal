@@ -128,6 +128,8 @@ export const useStageUtils = () => {
         y: pos.y - frame.y,
         type: "Text" as ObjectType,
         parentID: frame.id,
+        placeholder: true,
+        textValue: "",
       };
       addElement(frame, newText);
       currentDrawingElement.current = newText;

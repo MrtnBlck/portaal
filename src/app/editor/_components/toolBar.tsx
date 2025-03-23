@@ -7,7 +7,15 @@ import {
 
 import { Toggle } from "~/components/ui/toggle";
 import { useEditorStore } from "../store";
-import { Hand, MousePointer2, Frame, Square, Type, Image as ImgIcon } from "lucide-react";
+import {
+  Hand,
+  MousePointer2,
+  Frame,
+  Square,
+  Type,
+  Image as ImgIcon,
+  SquarePen,
+} from "lucide-react";
 import { useRef } from "react";
 
 interface ToolBarProps {
@@ -19,6 +27,8 @@ export function ToolBar({ className }: ToolBarProps) {
   const setTool = useEditorStore((state) => state.setTool);
   const addUploadedImage = useEditorStore((state) => state.addUploadedImage);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const userMode = useEditorStore((state) => state.userMode);
+  const toggleUserMode = useEditorStore((state) => state.toggleUserMode);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -85,87 +95,112 @@ export function ToolBar({ className }: ToolBarProps) {
           <TooltipTrigger asChild>
             <span>
               <Toggle
-                pressed={tool === "frame"}
-                onPressedChange={() =>
-                  setTool({ type: "frame", method: "selected" })
-                }
+                pressed={userMode === "designer"}
+                onPressedChange={() => toggleUserMode()}
               >
-                <Frame />
+                <SquarePen />
               </Toggle>
             </span>
           </TooltipTrigger>
           <TooltipContent>
-            <p>
-              Frame - <strong>F</strong>
-            </p>
+            <p>Toggle user mode</p>
           </TooltipContent>
         </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span>
-              <Toggle
-                pressed={tool === "rectangle"}
-                onPressedChange={() =>
-                  setTool({ type: "rectangle", method: "selected" })
-                }
-              >
-                <Square />
-              </Toggle>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>
-              Rectangle - <strong>R</strong>
-            </p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span>
-              <Toggle
-                pressed={tool === "image"}
-                onPressedChange={() => {
-                  setTool({ type: "image", method: "selected" });
-                  fileInputRef.current?.click();
-                }}
-              >
-                <ImgIcon />
-              </Toggle>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>
-              Image - <strong>I</strong>
-            </p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span>
-              <Toggle
-                pressed={tool === "text"}
-                onPressedChange={() =>
-                  setTool({ type: "text", method: "selected" })
-                }
-              >
-                <Type />
-              </Toggle>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>
-              Text - <strong>T</strong>
-            </p>
-          </TooltipContent>
-        </Tooltip>
+        {userMode === "designer" && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Toggle
+                  pressed={tool === "frame"}
+                  onPressedChange={() =>
+                    setTool({ type: "frame", method: "selected" })
+                  }
+                >
+                  <Frame />
+                </Toggle>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                Frame - <strong>F</strong>
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+        {userMode === "designer" && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Toggle
+                  pressed={tool === "rectangle"}
+                  onPressedChange={() =>
+                    setTool({ type: "rectangle", method: "selected" })
+                  }
+                >
+                  <Square />
+                </Toggle>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                Rectangle - <strong>R</strong>
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+        {userMode === "designer" && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Toggle
+                  pressed={tool === "image"}
+                  onPressedChange={() => {
+                    setTool({ type: "image", method: "selected" });
+                    fileInputRef.current?.click();
+                  }}
+                >
+                  <ImgIcon />
+                </Toggle>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                Image - <strong>I</strong>
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+        {userMode === "designer" && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Toggle
+                  pressed={tool === "text"}
+                  onPressedChange={() =>
+                    setTool({ type: "text", method: "selected" })
+                  }
+                >
+                  <Type />
+                </Toggle>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                Text - <strong>T</strong>
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+        {userMode === "designer" && (
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            style={{ display: "none" }}
+            onChange={handleFileChange}
+          />
+        )}
       </TooltipProvider>
-      <input
-        type="file"
-        accept="image/*"
-        ref={fileInputRef}
-        style={{ display: "none" }}
-        onChange={handleFileChange}
-      />
     </div>
   );
 }

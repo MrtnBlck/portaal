@@ -149,6 +149,7 @@ function ElementText({
         onDblClick={() =>
           toggleTextEditing(element.parentID!, element.id, true)
         }
+        onDblTap={() => toggleTextEditing(element.parentID!, element.id, true)}
         visible={!element.beingEdited}
         {...props}
       />
@@ -170,9 +171,9 @@ export function Element({ element, frameXY }: ElementProps) {
   const updateElement = useFrameStore((state) => state.updateElement);
   const draggable = useEditorStore((state) => state.tool.type === "move");
   const trRef = useRef<Konva.Transformer>(null);
-  const [elementRef, setElementRef] = useState<Konva.Rect | Konva.Text | Konva.Image | null>(
-    null,
-  );
+  const [elementRef, setElementRef] = useState<
+    Konva.Rect | Konva.Text | Konva.Image | null
+  >(null);
   const [image] = useImage("https://cataas.com/cat");
 
   // Attach transformer to the element
@@ -239,13 +240,25 @@ export function Element({ element, frameXY }: ElementProps) {
   return (
     <>
       {element.type === "Rectangle" && (
-        <Rect {...commonProps} ref={setElementRef}/>
+        <Rect {...commonProps} ref={setElementRef} />
       )}
       {element.type === "Image" && element.image && (
-        <KImage image={element.image} ref={setElementRef} {...commonProps} fill=""/>
+        <KImage
+          image={element.image}
+          ref={setElementRef}
+          {...commonProps}
+          fill=""
+        />
       )}
       {element.type === "Image" && !element.image && (
-        <KImage image={image} ref={setElementRef} {...commonProps} fill="" width={image?.width} height={image?.height}/>
+        <KImage
+          image={image}
+          ref={setElementRef}
+          {...commonProps}
+          fill=""
+          width={image?.width}
+          height={image?.height}
+        />
       )}
       {element.type === "Text" && (
         <ElementText

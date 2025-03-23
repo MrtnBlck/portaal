@@ -17,13 +17,31 @@ type FrameStore = {
   getElementIDs: (frameID: string) => string[];
   getElement: (frameID: string, elementID: string) => ObjectData | undefined;
   addElement: (frame: ObjectData, newElement: ObjectData) => void;
-  updateElement: (frameId: string, updatedElement: ObjectData, triggerSelect?: boolean) => void;
+  updateElement: (
+    frameId: string,
+    updatedElement: ObjectData,
+    triggerSelect?: boolean,
+  ) => void;
   deleteElement: (frameID: string, id: string) => void;
   // Text handling
-  updateTextValue: (frameID: string, elementID: string, textValue: string) => void;
-  toggleTextEditing: (frameID: string, elementID: string, mode: boolean) => void;
+  updateTextValue: (
+    frameID: string,
+    elementID: string,
+    textValue: string,
+  ) => void;
+  toggleTextEditing: (
+    frameID: string,
+    elementID: string,
+    mode: boolean,
+  ) => void;
   // Image handling, unnecessary probably TODO: remove
-  setImage: (frameID: string, elementID: string, image: HTMLImageElement) => void;
+  setImage: (
+    frameID: string,
+    elementID: string,
+    image: HTMLImageElement,
+  ) => void;
+  // Placeholder element handling
+  getPlaceholders: () => ObjectData[];
 };
 
 type EditorStore = {
@@ -38,6 +56,9 @@ type EditorStore = {
   uploadedImage: HTMLImageElement | null;
   addUploadedImage: (file: HTMLImageElement) => void;
   removeUploadedImage: () => void;
+  // User mode handling
+  userMode: "normal" | "designer";
+  toggleUserMode: (mode?: "normal" | "designer") => void;
 };
 
 // Temporary initial data
@@ -45,7 +66,7 @@ const frameID = uuidv4();
 const initialFrames: ObjectData[] = [
   {
     id: frameID,
-    name: "Frame 0",
+    name: "Horizontal 4:5",
     width: 310,
     height: 90,
     x: 30,
@@ -65,7 +86,7 @@ const initialFrames: ObjectData[] = [
       } as ObjectData,
       {
         id: uuidv4(),
-        name: "Text 0",
+        name: "Event title",
         width: 270,
         height: 50,
         x: 20,
@@ -74,6 +95,7 @@ const initialFrames: ObjectData[] = [
         parentID: frameID,
         textValue: "Üdv!👋 \nKatt ide egy kis meglepiért! :3",
         beingEdited: false,
+        placeholder: true,
       } as ObjectData,
     ] as ObjectData[],
   },
@@ -92,7 +114,8 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
     set((state) => ({
       frames: state.frames.map((frame) => {
         if (frame.id === updatedFrame.id) {
-          if (triggerSelect) useEditorStore.setState({ selectedObject: updatedFrame });
+          if (triggerSelect)
+            useEditorStore.setState({ selectedObject: updatedFrame });
           return updatedFrame;
         }
         return frame;
@@ -101,12 +124,16 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
   deleteFrame: (id) => {
     set((state) => ({
       frames: state.frames.filter((frame) => frame.id !== id),
-    }))
+    }));
     useEditorStore.setState({ selectedObject: null });
   },
   // Element handling
   getElementIDs: (frameID) => {
-    return get().getFrame(frameID)?.elements?.map((element) => element.id) ?? [];
+    return (
+      get()
+        .getFrame(frameID)
+        ?.elements?.map((element) => element.id) ?? []
+    );
   },
   getElement: (frameID, elementID) =>
     get()
@@ -130,7 +157,8 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
           element.id === updatedElement.id ? updatedElement : element,
         ),
       };
-      if (triggerSelect) useEditorStore.setState({ selectedObject: updatedElement });
+      if (triggerSelect)
+        useEditorStore.setState({ selectedObject: updatedElement });
       get().updateFrame(updatedFrame, false);
     }
   },
@@ -167,9 +195,14 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
       get().updateElement(frameID, updatedElement);
     }
   },
+  // Placeholder element handling
+  getPlaceholders: () =>
+    get().frames
+      .flatMap((frame) => frame.elements ?? [])
+      .filter((element) => element.placeholder),
 }));
 
-export const useEditorStore = create<EditorStore>((set) => ({
+export const useEditorStore = create<EditorStore>((set, get) => ({
   // Editor UI handling
   selectedObject: null,
   setSelectedObject: (object) => set({ selectedObject: object }),
@@ -184,4 +217,18 @@ export const useEditorStore = create<EditorStore>((set) => ({
   uploadedImage: null,
   addUploadedImage: (file) => set({ uploadedImage: file }),
   removeUploadedImage: () => set({ uploadedImage: null }),
+  // User mode handling
+  userMode: "normal",
+  /* toggleUserMode: (mode?: "normal" | "designer") => {
+    set((state) => ({
+      userMode: mode
+        ? mode
+        : state.userMode === "normal"
+          ? "designer"
+          : "normal",
+    }));
+  }, */
+  toggleUserMode: (mode?: "normal" | "designer") => {
+    set({ userMode: mode ? mode : get().userMode === "normal" ? "designer" : "normal" });
+  }
 }));

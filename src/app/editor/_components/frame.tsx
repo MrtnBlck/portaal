@@ -154,6 +154,7 @@ export function Frame({ ID }: FrameProps) {
   const updateFrame = useFrameStore((state) => state.updateFrame);
   const draggable = useEditorStore((state) => state.tool.type === "move");
   const tool = useEditorStore((state) => state.tool);
+  const selectedObject = useEditorStore((state) => state.selectedObject);
   const setStoreSelectedObject = useEditorStore(
     (state) => state.setSelectedObject,
   );
@@ -171,7 +172,6 @@ export function Frame({ ID }: FrameProps) {
     if (tool.type === "move" && frame) setStoreSelectedObject(frame);
   }, [tool.type, frame, setStoreSelectedObject]);
 
-  const selectedObject = useEditorStore((state) => state.selectedObject);
 
   if (!frame) return null;
 

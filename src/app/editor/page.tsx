@@ -30,6 +30,8 @@ export interface ObjectData {
   beingDrawn?: boolean;
   beingEdited?: boolean;
   image?: HTMLImageElement | null;
+  placeholder?: boolean;
+  linkedTo?: string[];
 }
 
 export default function EditorPage() {
