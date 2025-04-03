@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -29,6 +30,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem
   }
+
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -56,32 +58,29 @@
     --chart-5: 340 75% 55%
   }
 }
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
 
 @layer components {
   .sidepanel {
     @apply rounded-lg border border-neutral-800 bg-[#1F1F1FEB] px-0.5 pb-2.5 text-white shadow-[0px_0px_5px_4px_rgba(0,_0,_0,_0.05)] backdrop-blur-lg pointer-events-auto;
   }
-}
 
-@layer components {
   .group:focus-within {
-    @apply outline-none ring ring-1 ring-neutral-500;
+    @apply outline-none ring ring-neutral-500;
+  }
+
+  .scrollArea:hover {
+    @apply overflow-y-auto
+  }
+
+  .scrollArea {
+    @apply overflow-y-hidden;
+  }
+
+  .customButton {
+    @apply border border-transparent bg-white/5 text-neutral-400 hover:border-neutral-600/50 hover:bg-white/10 hover:text-white;
+  }
+
+  .asdasd {
+    @apply rounded-lg border border-neutral-800 bg-[#1F1F1FEB]/90 shadow-[0px_0px_5px_4px_rgba(0,_0,_0,_0.05)] backdrop-blur-lg;
   }
 }

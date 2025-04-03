@@ -33,7 +33,6 @@ export function ToolBar({ className }: ToolBarProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) {
-      console.log("File upload was cancelled.");
       return;
     }
     if (file) {

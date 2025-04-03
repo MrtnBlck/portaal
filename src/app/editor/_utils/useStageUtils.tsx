@@ -1,7 +1,7 @@
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useFrameStore, useEditorStore } from "../store";
 import { useRef, useCallback } from "react";
-import type { ObjectData, ObjectType } from "../page";
+import type { LinkData, ObjectData, ObjectType } from "../page";
 import { v4 as uuidv4 } from "uuid";
 import type Konva from "konva";
 
@@ -120,7 +120,7 @@ export const useStageUtils = () => {
     }
     if (storeTool.type === "text") {
       const newText: ObjectData = {
-        id: uuidv4(),
+        id: "tmpID",
         name: frame.elements ? `Text ${frame.elements.length}` : "Text 0",
         width: 1,
         height: 1,
@@ -128,7 +128,6 @@ export const useStageUtils = () => {
         y: pos.y - frame.y,
         type: "Text" as ObjectType,
         parentID: frame.id,
-        placeholder: true,
         textValue: "",
       };
       addElement(frame, newText);

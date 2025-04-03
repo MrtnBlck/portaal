@@ -1,0 +1,8 @@
+/* customScrollbar.css */
+.os-scrollbar {
+  opacity: 0.4; /* Set the desired opacity */
+}
+
+.os-scrollbar:hover {
+  opacity: 0.6; /* Optional: Change opacity on hover */
+}

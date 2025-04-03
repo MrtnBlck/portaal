@@ -83,6 +83,8 @@ function ElementText({
 
   // After drawing a text element switch to edit mode
   useEffect(() => {
+    if(element.name === "Text 2")
+      console.log(element.links, element, "element inline useEffect1");
     if (element.beingDrawn !== undefined && !element.beingDrawn) {
       toggleTextEditing(element.parentID!, element.id, true);
     }
@@ -90,6 +92,8 @@ function ElementText({
 
   // If the element gets unselected, turn off beingEdited
   useEffect(() => {
+    if(element.name === "Text 2")
+      console.log(element.links, element, "element inline useEffect2");
     if (!isSelected && element.beingEdited) {
       toggleTextEditing(element.parentID!, element.id, false);
     }
@@ -107,6 +111,9 @@ function ElementText({
       deleteElement(element.parentID, element.id);
     }
   };
+
+  if(element.name === "Text 2")
+  console.log(element.links, element, "element inline");
 
   return (
     <>

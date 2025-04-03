@@ -20,7 +20,7 @@ export default function RootLayout({
       lang="en"
       className={cn(
         GeistSans.className,
-        "dark h-screen w-screen",
+        "dark h-screen w-screen overflow-hidden",
       )}
     >
       <body>{children}</body>
