@@ -3,10 +3,8 @@ import { ActionBar } from "./actionBar";
 import { PropertiesPanel } from "./propertiesPanel";
 import { LayersPanel } from "./layersPanel";
 import { VariantsPanel } from "./variantsPanel";
-import { useEditorStore } from "../store";
 
 export function EditorUI() {
-  const userMode = useEditorStore((state) => state.userMode);
   return (
     <>
       <div className="pointer-events-none absolute inset-y-0 left-0 flex w-72 max-h-screen overflow-hidden select-none flex-col gap-2.5 p-2.5 z-20">

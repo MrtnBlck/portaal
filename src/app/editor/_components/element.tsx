@@ -21,7 +21,7 @@ interface ElementTextProps {
 }
 interface CommonProps {
   id: string;
-  parentID: string | undefined;
+  frameID: string | undefined;
   x: number;
   y: number;
   width: number;
@@ -83,37 +83,30 @@ function ElementText({
 
   // After drawing a text element switch to edit mode
   useEffect(() => {
-    if(element.name === "Text 2")
-      console.log(element.links, element, "element inline useEffect1");
     if (element.beingDrawn !== undefined && !element.beingDrawn) {
-      toggleTextEditing(element.parentID!, element.id, true);
+      toggleTextEditing(element.frameID!, element.id, true);
     }
-  }, [element.beingDrawn, toggleTextEditing, element.parentID, element.id]);
+  }, [element.beingDrawn, toggleTextEditing, element.frameID, element.id]);
 
   // If the element gets unselected, turn off beingEdited
   useEffect(() => {
-    if(element.name === "Text 2")
-      console.log(element.links, element, "element inline useEffect2");
     if (!isSelected && element.beingEdited) {
-      toggleTextEditing(element.parentID!, element.id, false);
+      toggleTextEditing(element.frameID!, element.id, false);
     }
   }, [isSelected, element, toggleTextEditing]);
 
   // Handle edit mode turn off outside of this function, so we can set the proper behavior
   const handleOnBlur = () => {
-    if (!element.parentID) return;
+    if (!element.frameID) return;
     if (!textAreaRef) return;
     const inputValue = textAreaRef.value;
     if (inputValue !== element.textValue && inputValue !== "") {
-      updateTextValue(element.parentID, element.id, inputValue);
+      updateTextValue(element.frameID, element.id, inputValue);
     } else if (inputValue === "") {
       // remove if empty
-      deleteElement(element.parentID, element.id);
+      deleteElement(element.frameID, element.id);
     }
   };
-
-  if(element.name === "Text 2")
-  console.log(element.links, element, "element inline");
 
   return (
     <>
@@ -129,7 +122,7 @@ function ElementText({
             onBlur={handleOnBlur}
             onKeyDown={(e) => {
               if (e.key === "Escape") {
-                toggleTextEditing(element.parentID!, element.id, false);
+                toggleTextEditing(element.frameID!, element.id, false);
                 handleOnBlur();
               }
             }}
@@ -142,7 +135,7 @@ function ElementText({
         ref={setElementRef}
         onTransform={(e) => {
           e.cancelBubble = true;
-          if (!elementRef || !element.parentID) return;
+          if (!elementRef || !element.frameID) return;
           const scaleX = elementRef.scaleX();
           const scaleY = elementRef.scaleY();
           const size = {
@@ -154,9 +147,9 @@ function ElementText({
           elementRef.scaleY(1);
         }}
         onDblClick={() =>
-          toggleTextEditing(element.parentID!, element.id, true)
+          toggleTextEditing(element.frameID!, element.id, true)
         }
-        onDblTap={() => toggleTextEditing(element.parentID!, element.id, true)}
+        onDblTap={() => toggleTextEditing(element.frameID!, element.id, true)}
         visible={!element.beingEdited}
         {...props}
       />
@@ -195,7 +188,7 @@ export function Element({ element, frameXY }: ElementProps) {
   const commonProps = useMemo<CommonProps>(() => {
     return {
       id: element.id,
-      parentID: element.parentID,
+      frameID: element.frameID,
       x: element.x + frameXY.x,
       y: element.y + frameXY.y,
       width: element.width,
@@ -207,7 +200,7 @@ export function Element({ element, frameXY }: ElementProps) {
       onDragStart: setSelectedObject,
       onTransformEnd: (e: Konva.KonvaEventObject<Event>) => {
         e.cancelBubble = true;
-        if (!elementRef || !element.parentID) return;
+        if (!elementRef || !element.frameID) return;
         const scaleX = elementRef.scaleX();
         const scaleY = elementRef.scaleY();
         const size = {
@@ -217,7 +210,7 @@ export function Element({ element, frameXY }: ElementProps) {
         elementRef.setSize(size);
         elementRef.scaleX(1);
         elementRef.scaleY(1);
-        updateElement(element.parentID, {
+        updateElement(element.frameID, {
           ...element,
           x: Math.round(elementRef.x() - frameXY.x),
           y: Math.round(elementRef.y() - frameXY.y),
@@ -226,8 +219,8 @@ export function Element({ element, frameXY }: ElementProps) {
       },
       onDragEnd: (e: Konva.KonvaEventObject<Event>) => {
         e.cancelBubble = true;
-        if (!elementRef || !element.parentID) return;
-        updateElement(element.parentID, {
+        if (!elementRef || !element.frameID) return;
+        updateElement(element.frameID, {
           ...element,
           x: Math.round(elementRef.x() - frameXY.x),
           y: Math.round(elementRef.y() - frameXY.y),

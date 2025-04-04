@@ -1,7 +1,7 @@
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useFrameStore, useEditorStore } from "../store";
 import { useRef, useCallback } from "react";
-import type { LinkData, ObjectData, ObjectType } from "../page";
+import type { ObjectData, ObjectType } from "../page";
 import { v4 as uuidv4 } from "uuid";
 import type Konva from "konva";
 
@@ -40,7 +40,7 @@ export const useStageUtils = () => {
     if (clickedOnEmpty) {
       if (storeSelectedObject?.beingEdited) {
         toggleTextEditing(
-          storeSelectedObject.parentID!,
+          storeSelectedObject.frameID!,
           storeSelectedObject.id,
           false,
         );
@@ -113,21 +113,21 @@ export const useStageUtils = () => {
         x: pos.x - frame.x,
         y: pos.y - frame.y,
         type: "Rectangle" as ObjectType,
-        parentID: frame.id,
+        frameID: frame.id,
       };
       addElement(frame, newRectangle);
       currentDrawingElement.current = newRectangle;
     }
     if (storeTool.type === "text") {
       const newText: ObjectData = {
-        id: "tmpID",
+        id: uuidv4(),
         name: frame.elements ? `Text ${frame.elements.length}` : "Text 0",
         width: 1,
         height: 1,
         x: pos.x - frame.x,
         y: pos.y - frame.y,
         type: "Text" as ObjectType,
-        parentID: frame.id,
+        frameID: frame.id,
         textValue: "",
       };
       addElement(frame, newText);
@@ -142,7 +142,7 @@ export const useStageUtils = () => {
         x: pos.x - frame.x,
         y: pos.y - frame.y,
         type: "Image" as ObjectType,
-        parentID: frame.id,
+        frameID: frame.id,
         image: uploadedImage,
       };
       addElement(frame, newImage);
@@ -161,7 +161,7 @@ export const useStageUtils = () => {
     if (!pos) return;
     const newObject = currentDrawingElement.current;
     if (!newObject) return;
-    const frame = getFrame(newObject.parentID ?? "");
+    const frame = getFrame(newObject.frameID ?? "");
     const x1 = drawingPositions.current.x;
     const y1 = drawingPositions.current.y;
     const x2 = pos.x - (frame ? frame.x : 0);
@@ -181,8 +181,8 @@ export const useStageUtils = () => {
     currentDrawingElement.current = newObject;
     if (storeTool.type === "frame") {
       updateStoreFrame(newObject, false);
-    } else if (newObject.parentID) {
-      updateElement(newObject.parentID, newObject, false);
+    } else if (newObject.frameID) {
+      updateElement(newObject.frameID, newObject, false);
     }
   };
 
@@ -193,22 +193,22 @@ export const useStageUtils = () => {
       newObject.beingDrawn = false;
       updateStoreFrame(newObject, false);
     }
-    if (newObject.parentID) {
+    if (newObject.frameID) {
       if (newObject.beingDrawn) {
         newObject.beingDrawn = false;
-        updateElement(newObject.parentID, newObject, false);
+        updateElement(newObject.frameID, newObject, false);
       } else {
         // Set initial values if its not being drawn
         if (newObject.type === "Image" && newObject.image) {
           newObject.width = newObject.image.width;
           newObject.height = newObject.image.height;
           newObject.beingDrawn = false;
-          updateElement(newObject.parentID, newObject, false);
+          updateElement(newObject.frameID, newObject, false);
         } else {
           newObject.width = 100;
           newObject.height = newObject.type === "Text" ? 25 : 100;
           newObject.beingDrawn = false;
-          updateElement(newObject.parentID, newObject, false);
+          updateElement(newObject.frameID, newObject, false);
         }
       }
     }
@@ -257,8 +257,8 @@ export const useStageUtils = () => {
     if (!storeSelectedObject) return;
     if (storeSelectedObject.type === "Frame") {
       deleteStoreFrame(storeSelectedObject.id);
-    } else if (storeSelectedObject.parentID) {
-      deleteElement(storeSelectedObject.parentID, storeSelectedObject.id);
+    } else if (storeSelectedObject.frameID) {
+      deleteElement(storeSelectedObject.frameID, storeSelectedObject.id);
     }
   }, [storeSelectedObject, deleteStoreFrame, deleteElement]);
 

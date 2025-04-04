@@ -17,18 +17,13 @@ export type ToolState = {
 export type ObjectType = "Frame" | "Image" | "Text" | "Rectangle" | "Group";
 
 export interface Link {
-  parentID: string;
+  frameID: string;
   elementID: string;
-}
-
-export interface LinkData {
-  linkRole: "parent" | "child";
-  linkedTo: Link | null;
-  linkedElements: Link[] | null;
 }
 
 export interface ObjectData {
   id: string;
+  frameID?: string;
   name: string;
   width: number;
   height: number;
@@ -36,12 +31,11 @@ export interface ObjectData {
   y: number;
   type: ObjectType;
   elements?: ObjectData[];
-  parentID?: string;
   textValue?: string;
   beingDrawn?: boolean;
   beingEdited?: boolean;
   image?: HTMLImageElement | null;
-  links?: LinkData;
+  linkRole?: "parent" | "child";
 }
 
 export default function EditorPage() {

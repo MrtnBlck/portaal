@@ -9,14 +9,14 @@ export function LayersPanel() {
   const setSelectedObject = useEditorStore((state) => state.setSelectedObject);
   const getFrame = useFrameStore((state) => state.getFrame);
   const userMode = useEditorStore((state) => state.userMode);
-  const getLinkParents = useFrameStore((state) => state.getLinkParents);
+  const getRoleLinks = useFrameStore((state) => state.getRoleLinks);
 
   if (userMode === "designer") {
     if (!selectedObject) {
       return null;
     }
-    if (selectedObject.parentID) {
-      displayedElements = getFrame(selectedObject.parentID);
+    if (selectedObject.frameID) {
+      displayedElements = getFrame(selectedObject.frameID);
     } else {
       displayedElements = selectedObject;
       if (selectedObject?.elements?.length === 0) {
@@ -65,7 +65,7 @@ export function LayersPanel() {
     );
   }
 
-  const elements = getLinkParents();
+  const elements = getRoleLinks("parent");
   return (
     <div className="sidepanel flex flex-col overflow-hidden">
       <div className="px-4 pb-2 pt-4 text-xs font-semibold">Elements</div>

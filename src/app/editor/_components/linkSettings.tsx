@@ -22,98 +22,98 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { useState } from "react";
-import { useEditorStore, useFrameStore } from "../store";
-import type { Link, LinkData } from "../page";
+import { useEditorStore, useFrameStore, useLinkStore } from "../store";
+import type { Link } from "../page";
 
 export function LinkSettings() {
   const [open, setOpen] = useState(false);
   const selectedObject = useEditorStore((state) => state.selectedObject);
-  const getLinkParents = useFrameStore((state) => state.getLinkParents);
-  const getLinkChildren = useFrameStore((state) => state.getLinkChildren);
-  const addLink = useFrameStore((state) => state.addLink);
-  const updateElement = useFrameStore((state) => state.updateElement);
+  const getRoleLinks = useFrameStore((state) => state.getRoleLinks);
+  const addLink = useLinkStore((state) => state.addLink);
+  const setLinkRole = useFrameStore((state) => state.setLinkRole);
+  const removeRelatedLinks = useLinkStore((state) => state.removeRelatedLinks);
   const linkRoles = ["none", "parent", "child"];
   let elements;
   let addNewLink: (link: Link) => void;
   if (!selectedObject) return;
   const sOLink = {
-    parentID: selectedObject.parentID,
+    frameID: selectedObject.frameID,
     elementID: selectedObject.id,
   } as Link;
-  if (selectedObject?.links?.linkRole === "parent") {
+  if (selectedObject.linkRole === "parent") {
     // Parent element, show only children which are not linked to this element
-    elements = getLinkChildren().filter(
-      (element) => element.links?.linkedTo?.elementID !== selectedObject.id,
-    );
-    addNewLink = (cLink: Link) => addLink(cLink, sOLink);
-  } else if (selectedObject.links?.linkRole === "child") {
+    elements = getRoleLinks("child", selectedObject.id);
+    addNewLink = (cLink: Link) =>
+      addLink({
+        parentLink: sOLink,
+        childLink: cLink,
+      });
+  } else if (selectedObject.linkRole === "child") {
     // Child element, Show only other parent elements
-    elements = getLinkParents().filter(
-      (element) => element.id !== selectedObject.links?.linkedTo?.elementID,
-    );
-    addNewLink = (pLink: Link) => addLink(sOLink, pLink);
+    elements = getRoleLinks("parent", selectedObject.id);
+    addNewLink = (pLink: Link) =>
+      addLink({
+        parentLink: pLink,
+        childLink: sOLink,
+      });
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <div className="flex gap-1.5">
-        <DropdownMenu>
-          <DropdownMenuTrigger className="customButton group flex h-7 w-28 items-center justify-between gap-1.5 rounded-md pl-2.5 pr-1.5 text-xs focus:ring-0">
-            {selectedObject.links ? selectedObject.links?.linkRole : "none"}
-            <ChevronsUpDown className="h-3.5 w-3.5 text-neutral-400 group-hover:text-white" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="min-w-20 rounded-lg border border-neutral-800 bg-[#1F1F1FEB]/90 shadow-[0px_0px_5px_4px_rgba(0,_0,_0,_0.05)] backdrop-blur-lg">
-            {linkRoles.map((lRole) => (
-              <DropdownMenuItem
-                key={lRole}
-                className="justify-center text-xs hover:bg-white/5"
-                onClick={() => {
-                  const links = lRole === "none"
-                  ? undefined
-                  : ({ linkRole: lRole, linkedElements: null, linkedTo: null } as LinkData);
-                  console.log(links, "popover inline");
-                  updateElement(selectedObject.parentID!, {
-                    ...selectedObject,
-                    links: links,
-                  });
-                }}
-                
-              >
-                {lRole}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+    <div className="flex gap-1.5">
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger className="customButton group flex h-7 w-28 items-center justify-between gap-1.5 rounded-md pl-2.5 pr-1.5 text-xs focus:ring-0">
+          {selectedObject.linkRole ?? "none"}
+          <ChevronsUpDown className="h-3.5 w-3.5 text-neutral-400 group-hover:text-white" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="min-w-20 rounded-lg border border-neutral-800 bg-[#1F1F1FEB]/90 shadow-[0px_0px_5px_4px_rgba(0,_0,_0,_0.05)] backdrop-blur-lg">
+          {linkRoles.map((lRole) => (
+            <DropdownMenuItem
+              key={lRole}
+              className="justify-center text-xs hover:bg-white/5"
+              onClick={() => {
+                setLinkRole(
+                  selectedObject.frameID!,
+                  selectedObject.id,
+                  lRole as "none" | "parent" | "child",
+                );
+                removeRelatedLinks(selectedObject.id);
+              }}
+              {...(selectedObject.linkRole !== lRole ? {} : { disabled: true })}
+            >
+              {lRole}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             className="customButton h-7 w-full gap-0.5"
             variant="property"
             role="combobox"
-            {...(selectedObject.links ? {} : { disabled: true })}
+            {...(selectedObject.linkRole ? {} : { disabled: true })}
           >
             <Plus />
             <span className="text-xs">Add new</span>
           </Button>
         </PopoverTrigger>
-      </div>
-      <PopoverContent className="w-44 rounded-none border-none bg-transparent p-0">
-        <Command className="min-h-28 rounded-lg border border-neutral-800 bg-[#1F1F1FEB]/90 shadow-[0px_0px_5px_4px_rgba(0,_0,_0,_0.05)] backdrop-blur-lg">
-          <CommandInput
-            placeholder="Search element..."
-            className="h-9 text-xs placeholder:text-neutral-400"
-          />
-          <CommandList className="overflow overflow-hidden">
-            <CommandEmpty>No elements found</CommandEmpty>
-            <CommandGroup className="px-1.5 pb-2">
-              {elements &&
-                elements.map((element) => (
+        <PopoverContent className="w-44 rounded-none border-none bg-transparent p-0">
+          <Command className="max-h-36 min-h-28 rounded-lg border border-neutral-800 bg-[#1F1F1FEB]/90 shadow-[0px_0px_5px_4px_rgba(0,_0,_0,_0.05)] backdrop-blur-lg">
+            <CommandInput
+              placeholder="Search element..."
+              className="h-9 text-xs placeholder:text-neutral-400"
+            />
+            <CommandList className="overflow scrollbar-hide overflow-y-auto">
+              <CommandEmpty>No elements found</CommandEmpty>
+              <CommandGroup className="px-1.5 pb-2" heading="asd">
+                {elements?.map((element) => (
                   <CommandItem
                     key={element.id}
-                    value={element.id}
+                    value={element.name}
                     onSelect={() => {
                       addNewLink({
                         elementID: element.id,
-                        parentID: element.parentID!,
+                        frameID: element.frameID!,
                       });
                       setOpen(false);
                     }}
@@ -123,30 +123,40 @@ export function LinkSettings() {
                     {element.name}
                   </CommandItem>
                 ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }
 
 export function LinkList() {
   const selectedObject = useEditorStore((state) => state.selectedObject);
-  if (!selectedObject || !selectedObject.links) return;
-  if (selectedObject.links.linkRole === "child" && selectedObject.links.linkedTo) {
+  const getRelatedLinks = useLinkStore((state) => state.getRelatedLinks);
+  const links = useLinkStore((state) => state.links);
+  if (!links) return null;
+
+  if (!selectedObject?.linkRole) return;
+  if (selectedObject.linkRole === "child") {
     // Child element
-    const pLink = selectedObject.links.linkedTo;
+    const pLink = getRelatedLinks(selectedObject.id, "child") as Link | null;
+    if (!pLink) return;
     const cLink = {
-      parentID: selectedObject.parentID,
+      frameID: selectedObject.frameID,
       elementID: selectedObject.id,
     } as Link;
     return <LinkListItem link={cLink} vLink={pLink} />;
-  } else if ((selectedObject.links.linkRole = "parent")) {
+  } else if (selectedObject.linkRole === "parent") {
     // Parent element
-    return selectedObject.links.linkedElements?.map((link) => {
+    const cLinks = getRelatedLinks(selectedObject.id, "parent") as
+      | Link[]
+      | null;
+    if (!cLinks) return;
+    return cLinks.map((link) => {
       const pLink = {
-        parentID: selectedObject.parentID,
+        frameID: selectedObject.frameID,
         elementID: selectedObject.id,
       } as Link;
       return <LinkListItem link={pLink} vLink={link} key={link.elementID} />;
@@ -156,8 +166,8 @@ export function LinkList() {
 
 function LinkListItem({ link, vLink }: { link: Link; vLink: Link }) {
   const getElement = useFrameStore((state) => state.getElement);
-  const element = getElement(vLink.parentID, vLink.elementID);
-  const removeLink = useFrameStore((state) => state.removeLink);
+  const element = getElement(vLink.frameID, vLink.elementID);
+  const removeLink = useLinkStore((state) => state.removeLink);
   if (!element) return;
   return (
     <div className="flex gap-1.5">
@@ -170,9 +180,15 @@ function LinkListItem({ link, vLink }: { link: Link; vLink: Link }) {
         className="h-7 w-7"
         variant="property"
         onClick={() =>
-          element.links?.linkRole === "child"
-            ? removeLink(vLink, link)
-            : removeLink(link, vLink)
+          element.linkRole === "child"
+            ? removeLink({
+                parentLink: link,
+                childLink: vLink,
+              })
+            : removeLink({
+                parentLink: vLink,
+                childLink: link,
+              })
         }
       >
         <X />

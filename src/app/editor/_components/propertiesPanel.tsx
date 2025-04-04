@@ -11,7 +11,7 @@ export function PropertiesPanel() {
   const updateFrame = useFrameStore((state) => state.updateFrame);
   const updateElement = useFrameStore((state) => state.updateElement);
   const userMode = useEditorStore((state) => state.userMode);
-  const getLinkParents = useFrameStore((state) => state.getLinkParents);
+  const getRoleLinks = useFrameStore((state) => state.getRoleLinks);
   const updateTextValue = useFrameStore((state) => state.updateTextValue);
 
   if (userMode === "designer") {
@@ -22,8 +22,8 @@ export function PropertiesPanel() {
     const setValue = (property: string, value: number) => {
       if (selectedObject.type === "Frame") {
         updateFrame({ ...selectedObject, [property]: value });
-      } else if (selectedObject.parentID) {
-        updateElement(selectedObject.parentID, {
+      } else if (selectedObject.frameID) {
+        updateElement(selectedObject.frameID, {
           ...selectedObject,
           [property]: value,
         });
@@ -95,8 +95,8 @@ export function PropertiesPanel() {
   }
 
   const setValue = (value: string) => {
-    if (!selectedObject?.parentID) return;
-    updateTextValue(selectedObject.parentID, selectedObject.id, value);
+    if (!selectedObject?.frameID) return;
+    updateTextValue(selectedObject.frameID, selectedObject.id, value);
   };
 
   return (
@@ -106,7 +106,7 @@ export function PropertiesPanel() {
         options={{ scrollbars: { theme: "os-theme-light", autoHide: "leave" }  }}
       >
         <div className="flex-1 space-y-2 pb-2">
-          {getLinkParents().map((element) => (
+          {getRoleLinks("parent").map((element) => (
             <div key={element.id} className="pb-0.5">
               <div className="px-3 pb-1 text-xs font-medium text-neutral-400">
                 {element.name}

@@ -56,14 +56,14 @@ function FrameRect({
         fill={fill}
         onClick={() => {
           if (selectedObject?.beingEdited) {
-            toggleTextEditing(selectedObject.parentID!, selectedObject.id, false);
+            toggleTextEditing(selectedObject.frameID!, selectedObject.id, false);
             return;
           }
           setSelectedObject();
         }}
         onTap={() => {
           if (selectedObject?.beingEdited) {
-            toggleTextEditing(selectedObject.parentID!, selectedObject.id, false);
+            toggleTextEditing(selectedObject.frameID!, selectedObject.id, false);
             return;
           }
           setSelectedObject();
@@ -106,7 +106,7 @@ function FrameRect({
       />
       <Group
         clipFunc={
-          isSelected || selectedObject?.parentID === frame.id
+          isSelected || selectedObject?.frameID === frame.id
             ? undefined
             : (ctx) => {
                 ctx.rect(frame.x, frame.y, frame.width, frame.height);

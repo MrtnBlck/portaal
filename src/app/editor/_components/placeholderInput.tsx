@@ -11,16 +11,21 @@ interface placeholderInputProps {
   element: ObjectData;
 }
 
-export function PlaceholderInput({ value, setValue, element }: placeholderInputProps) {
+export function PlaceholderInput({
+  value,
+  setValue,
+  element,
+}: placeholderInputProps) {
   const [inputValue, setInputValue] = useState(value);
   const setSelectedObject = useEditorStore((state) => state.setSelectedObject);
+  useEffect(() => {
+    if (!value) return;
+    setInputValue(value.toString());
+  }, [value]);
+
   if (value === undefined || inputValue === undefined) {
     return null;
   }
-
-  useEffect(() => {
-    setInputValue(value.toString());
-  }, [value]);
 
   const handleOnBlur = () => {
     setValue(inputValue);
@@ -33,7 +38,7 @@ export function PlaceholderInput({ value, setValue, element }: placeholderInputP
   };
 
   return (
-    <div className="group flex w-full items-center rounded-md border border-neutral-700/50 bg-white/5 px-2.5 text-xs">
+    <div className="group flex w-full items-center rounded-md border border-neutral-700/50 bg-white/5 px-2.5 text-xs focus:">
       <Input
         className="h-7 w-full rounded-none border-none pl-0 !text-xs focus-visible:ring-0"
         value={inputValue}
@@ -42,7 +47,9 @@ export function PlaceholderInput({ value, setValue, element }: placeholderInputP
           setInputValue(e.target.value)
         }
         onKeyDown={handleOnKeyDown}
-        onFocus={(e) => {setSelectedObject(element)}}
+        onFocus={() => {
+          setSelectedObject(element);
+        }}
       ></Input>
     </div>
   );

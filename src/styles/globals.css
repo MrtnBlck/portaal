@@ -65,7 +65,7 @@
   }
 
   .group:focus-within {
-    @apply outline-none ring ring-neutral-500;
+    @apply outline-none ring-neutral-500 ring-1;
   }
 
   .scrollArea:hover {
@@ -80,7 +80,13 @@
     @apply border border-transparent bg-white/5 text-neutral-400 hover:border-neutral-600/50 hover:bg-white/10 hover:text-white;
   }
 
-  .asdasd {
-    @apply rounded-lg border border-neutral-800 bg-[#1F1F1FEB]/90 shadow-[0px_0px_5px_4px_rgba(0,_0,_0,_0.05)] backdrop-blur-lg;
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
   }
 }
