@@ -105,7 +105,7 @@ export function LinkSettings() {
             />
             <CommandList className="overflow scrollbar-hide overflow-y-auto">
               <CommandEmpty>No elements found</CommandEmpty>
-              <CommandGroup className="px-1.5 pb-2" heading="asd">
+              <CommandGroup className="px-1.5 pb-2">
                 {elements?.map((element) => (
                   <CommandItem
                     key={element.id}
