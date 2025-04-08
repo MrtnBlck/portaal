@@ -23,38 +23,35 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { useState } from "react";
 import { useEditorStore, useFrameStore, useLinkStore } from "../store";
-import type { Link } from "../page";
+import type { FrameElement, TextData } from "../_utils/editorTypes";
 
 export function LinkSettings() {
   const [open, setOpen] = useState(false);
-  const selectedObject = useEditorStore((state) => state.selectedObject);
-  const getRoleLinks = useFrameStore((state) => state.getRoleLinks);
+  const selectedObject = useEditorStore((state) => state.selectedObject) as TextData | null;
+  const getRoleElements = useFrameStore((state) => state.getRoleElements);
   const addLink = useLinkStore((state) => state.addLink);
   const setLinkRole = useFrameStore((state) => state.setLinkRole);
   const removeRelatedLinks = useLinkStore((state) => state.removeRelatedLinks);
   const linkRoles = ["none", "parent", "child"];
   let elements;
-  let addNewLink: (link: Link) => void;
-  if (!selectedObject) return;
-  const sOLink = {
-    frameID: selectedObject.frameID,
-    elementID: selectedObject.id,
-  } as Link;
+  let addNewLink: (link: FrameElement) => void;
+  if (!selectedObject) return null;
+  const sElement = selectedObject as FrameElement;
   if (selectedObject.linkRole === "parent") {
     // Parent element, show only children which are not linked to this element
-    elements = getRoleLinks("child", selectedObject.id);
-    addNewLink = (cLink: Link) =>
+    elements = getRoleElements("child", selectedObject.ID);
+    addNewLink = (cElement: FrameElement) =>
       addLink({
-        parentLink: sOLink,
-        childLink: cLink,
+        parentElement: sElement,
+        childElement: cElement,
       });
   } else if (selectedObject.linkRole === "child") {
     // Child element, Show only other parent elements
-    elements = getRoleLinks("parent", selectedObject.id);
-    addNewLink = (pLink: Link) =>
+    elements = getRoleElements("parent", selectedObject.ID);
+    addNewLink = (pElement: FrameElement) =>
       addLink({
-        parentLink: pLink,
-        childLink: sOLink,
+        parentElement: pElement,
+        childElement: sElement,
       });
   }
 
@@ -69,14 +66,14 @@ export function LinkSettings() {
           {linkRoles.map((lRole) => (
             <DropdownMenuItem
               key={lRole}
-              className="justify-center text-xs hover:bg-white/5"
+              className="justify-center text-xs hover:!bg-white/5"
               onClick={() => {
                 setLinkRole(
-                  selectedObject.frameID!,
-                  selectedObject.id,
+                  selectedObject.frameID,
+                  selectedObject.ID,
                   lRole as "none" | "parent" | "child",
                 );
-                removeRelatedLinks(selectedObject.id);
+                removeRelatedLinks(selectedObject.ID);
               }}
               {...(selectedObject.linkRole !== lRole ? {} : { disabled: true })}
             >
@@ -108,12 +105,12 @@ export function LinkSettings() {
               <CommandGroup className="px-1.5 pb-2">
                 {elements?.map((element) => (
                   <CommandItem
-                    key={element.id}
+                    key={element.ID}
                     value={element.name}
                     onSelect={() => {
                       addNewLink({
-                        elementID: element.id,
-                        frameID: element.frameID!,
+                        frameID: element.frameID,
+                        ID: element.ID,
                       });
                       setOpen(false);
                     }}
@@ -133,42 +130,34 @@ export function LinkSettings() {
 }
 
 export function LinkList() {
-  const selectedObject = useEditorStore((state) => state.selectedObject);
-  const getRelatedLinks = useLinkStore((state) => state.getRelatedLinks);
+  const selectedObject = useEditorStore((state) => state.selectedObject) as TextData | null;
+  const getRelatedElements = useLinkStore((state) => state.getRelatedElements);
   const links = useLinkStore((state) => state.links);
-  if (!links) return null;
-
-  if (!selectedObject?.linkRole) return;
+  if (!links || !selectedObject?.linkRole) return null;
   if (selectedObject.linkRole === "child") {
     // Child element
-    const pLink = getRelatedLinks(selectedObject.id, "child") as Link | null;
-    if (!pLink) return;
-    const cLink = {
-      frameID: selectedObject.frameID,
-      elementID: selectedObject.id,
-    } as Link;
-    return <LinkListItem link={cLink} vLink={pLink} />;
+    const pElement = getRelatedElements(selectedObject.ID, "child") as FrameElement | null;
+    if (!pElement) return null;
+    const sElement = selectedObject as FrameElement;
+    return <LinkListItem otherElement={sElement} displayedElement={pElement} />;
   } else if (selectedObject.linkRole === "parent") {
     // Parent element
-    const cLinks = getRelatedLinks(selectedObject.id, "parent") as
-      | Link[]
+    const cElements = getRelatedElements(selectedObject.ID, "parent") as
+      | FrameElement[]
       | null;
-    if (!cLinks) return;
-    return cLinks.map((link) => {
-      const pLink = {
-        frameID: selectedObject.frameID,
-        elementID: selectedObject.id,
-      } as Link;
-      return <LinkListItem link={pLink} vLink={link} key={link.elementID} />;
+    if (!cElements) return null;
+    return cElements.map((element) => {
+      const sElement = selectedObject as FrameElement;
+      return <LinkListItem otherElement={sElement} displayedElement={element} key={element.ID} />;
     });
   }
 }
 
-function LinkListItem({ link, vLink }: { link: Link; vLink: Link }) {
+function LinkListItem({ otherElement, displayedElement }: { otherElement: FrameElement; displayedElement: FrameElement }) {
   const getElement = useFrameStore((state) => state.getElement);
-  const element = getElement(vLink.frameID, vLink.elementID);
+  const element = getElement(displayedElement.frameID, displayedElement.ID) as TextData | null;
   const removeLink = useLinkStore((state) => state.removeLink);
-  if (!element) return;
+  if (!element) return null;
   return (
     <div className="flex gap-1.5">
       <div className="flex-1 overflow-hidden overflow-ellipsis whitespace-nowrap rounded-md bg-white/5 px-2.5 py-1.5 text-xs text-neutral-400">
@@ -182,12 +171,12 @@ function LinkListItem({ link, vLink }: { link: Link; vLink: Link }) {
         onClick={() =>
           element.linkRole === "child"
             ? removeLink({
-                parentLink: link,
-                childLink: vLink,
+                parentElement: otherElement,
+                childElement: displayedElement,
               })
             : removeLink({
-                parentLink: vLink,
-                childLink: link,
+                parentElement: displayedElement,
+                childElement: otherElement,
               })
         }
       >

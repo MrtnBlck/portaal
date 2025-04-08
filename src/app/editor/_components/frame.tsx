@@ -3,26 +3,26 @@
 import { Layer, Rect, Text, Transformer, Group } from "react-konva";
 import { useRef, useEffect, useState, useCallback } from "react";
 import type Konva from "konva";
-import type { ObjectData } from "../page";
 import { useFrameStore, useEditorStore } from "../store";
 import { Element } from "./element";
+import type {
+  FrameData,
+  FrameElementData,
+  TextData,
+} from "../_utils/editorTypes";
+import { TinyColor } from "@ctrl/tinycolor";
 
 interface RectProps {
-  frame: ObjectData;
+  frame: FrameData;
   fill?: string;
-  selectedObject: ObjectData | null;
+  selectedObject: FrameData | FrameElementData | null;
   setSelectedObject: () => void;
   titleRef: React.RefObject<Konva.Text>;
   inverseScale: number;
 }
 
-interface FrameProps {
-  ID: string;
-}
-
 function FrameRect({
   frame,
-  fill = "#FFFFFF",
   selectedObject,
   setSelectedObject,
   titleRef,
@@ -30,12 +30,19 @@ function FrameRect({
 }: RectProps) {
   const shapeRef = useRef<Konva.Rect>(null);
   const trRef = useRef<Konva.Transformer>(null);
-  //const isTransformingRef = useRef(false);
   const [isTransforming, setIsTransforming] = useState(false);
   const updateFrame = useFrameStore((state) => state.updateFrame);
   const toggleTextEditing = useFrameStore((state) => state.toggleTextEditing);
   const [frameXY, setFrameXY] = useState({ x: frame.x, y: frame.y });
-  const isSelected = selectedObject?.id === frame.id;
+  const isSelected = selectedObject?.ID === frame.ID;
+  const { R, G, B } = frame.fill;
+
+  const color = new TinyColor({
+    r: R,
+    g: G,
+    b: B,
+    a: frame.fillOpacity / 100,
+  });
 
   useEffect(() => {
     if (isSelected && trRef.current && shapeRef.current) {
@@ -48,22 +55,30 @@ function FrameRect({
   return (
     <>
       <Rect
-        id={frame.id}
+        id={frame.ID}
         x={frame.x}
         y={frame.y}
         width={frame.width}
         height={frame.height}
-        fill={fill}
+        fill={color.toHex8String()}
         onClick={() => {
-          if (selectedObject?.beingEdited) {
-            toggleTextEditing(selectedObject.frameID!, selectedObject.id, false);
+          if (selectedObject && (selectedObject as TextData).beingEdited) {
+            toggleTextEditing(
+              (selectedObject as TextData)?.frameID,
+              selectedObject.ID,
+              false,
+            );
             return;
           }
           setSelectedObject();
         }}
         onTap={() => {
-          if (selectedObject?.beingEdited) {
-            toggleTextEditing(selectedObject.frameID!, selectedObject.id, false);
+          if (selectedObject && (selectedObject as TextData).beingEdited) {
+            toggleTextEditing(
+              (selectedObject as TextData)?.frameID,
+              selectedObject.ID,
+              false,
+            );
             return;
           }
           setSelectedObject();
@@ -74,7 +89,6 @@ function FrameRect({
           if (node) {
             const scaleX = node.scaleX();
             const scaleY = node.scaleY();
-
             const size = {
               width: Math.round(Math.max(5, node.width() * scaleX)),
               height: Math.round(Math.max(5, node.height() * scaleY)),
@@ -106,7 +120,8 @@ function FrameRect({
       />
       <Group
         clipFunc={
-          isSelected || selectedObject?.frameID === frame.id
+          isSelected ||
+          (selectedObject as FrameElementData)?.frameID === frame.ID
             ? undefined
             : (ctx) => {
                 ctx.rect(frame.x, frame.y, frame.width, frame.height);
@@ -116,14 +131,14 @@ function FrameRect({
         {frame.elements?.map((element) => {
           if (isTransforming) {
             return (
-              <Element element={element} frameXY={frameXY} key={element.id} />
+              <Element element={element} frameXY={frameXY} key={element.ID} />
             );
           }
           return (
             <Element
               element={element}
               frameXY={{ x: frame.x, y: frame.y }}
-              key={element.id}
+              key={element.ID}
             />
           );
         })}
@@ -147,14 +162,17 @@ function FrameRect({
   );
 }
 
-export function Frame({ ID }: FrameProps) {
+export function Frame({ ID }: { ID: string }) {
   const getFrame = useFrameStore((state) => state.getFrame);
   const frame = getFrame(ID);
   const stageScale = useEditorStore((state) => state.stageScale);
   const updateFrame = useFrameStore((state) => state.updateFrame);
   const draggable = useEditorStore((state) => state.tool.type === "move");
   const tool = useEditorStore((state) => state.tool);
-  const selectedObject = useEditorStore((state) => state.selectedObject);
+  const selectedObject = useEditorStore((state) => state.selectedObject) as
+    | FrameData
+    | FrameElementData
+    | null;
   const setStoreSelectedObject = useEditorStore(
     (state) => state.setSelectedObject,
   );
@@ -171,7 +189,6 @@ export function Frame({ ID }: FrameProps) {
   const setSelectedObject = useCallback(() => {
     if (tool.type === "move" && frame) setStoreSelectedObject(frame);
   }, [tool.type, frame, setStoreSelectedObject]);
-
 
   if (!frame) return null;
 
@@ -200,7 +217,7 @@ export function Frame({ ID }: FrameProps) {
         />
         <Text
           text={frame.name}
-          fill={selectedObject?.id === frame.id ? "#70AFDC" : "#979797"}
+          fill={selectedObject?.ID === frame.ID ? "#70AFDC" : "#979797"}
           x={frame.x}
           y={frame.y + -20 * inverseScale}
           scale={{ x: inverseScale, y: inverseScale }}

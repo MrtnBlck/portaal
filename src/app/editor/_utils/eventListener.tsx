@@ -54,7 +54,10 @@ export function EventListener() {
       setMouseButton(null);
       if (
         (storeTool.type === "hand" && storeTool.method === "toggle") ||
-        storeTool.type === "frame" || storeTool.type === "rectangle" || storeTool.type === "text" || storeTool.type === "image"
+        storeTool.type === "frame" ||
+        storeTool.type === "rectangle" ||
+        storeTool.type === "text" ||
+        storeTool.type === "image"
       ) {
         setStoreTool({ type: "move", method: "selected" });
       }
@@ -88,8 +91,12 @@ export function EventListener() {
 
   // keydown
   useEffect(() => {
-    if (selectedObject?.beingEdited) return;
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return;
       switch (e.code) {
         case "Space":
           if (storeTool.type !== "hand") {
@@ -126,7 +133,7 @@ export function EventListener() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [storeTool, setStoreTool, deleteSelectedObject, selectedObject?.beingEdited]);
+  }, [storeTool, setStoreTool, deleteSelectedObject, selectedObject]);
 
   return null;
 }

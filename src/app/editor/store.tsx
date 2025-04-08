@@ -1,68 +1,74 @@
 import { create } from "zustand";
-import type { ObjectData, ToolState } from "./page";
 import { v4 as uuidv4 } from "uuid";
-import type { ObjectType, Link } from "./page";
+import type {
+  ToolState,
+  FrameData,
+  ObjectType,
+  TextData,
+  PictureData,
+  Link,
+  FrameElement,
+  FrameElementData,
+  ObjectData,
+  RGBColor,
+} from "./_utils/editorTypes";
 
-interface LinkData {
-  parentLink: Link;
-  childLink: Link;
-}
+type LinkStore = {
+  links: Link[];
+  getRelatedElements: (
+    ID: string,
+    role: string,
+  ) => FrameElement[] | FrameElement | null;
+  getSiblingElements: (ID: string) => FrameElement[] | null;
+  addLink: (newLink: Link) => void;
+  removeLink: (link: Link) => void;
+  removeRelatedLinks: (ID: string) => void;
+  updateLinkedText: (link: FrameElement, textValue: string) => void;
+  compareLinks: (fLink: Link, sLink: Link) => boolean;
+};
 
 type FrameStore = {
   // All data
-  frames: ObjectData[];
-  setFrames: (newFrames: ObjectData[]) => void;
+  frames: FrameData[];
+  setFrames: (newFrames: FrameData[]) => void;
   // Frame handling
   getFrameIDs: () => string[];
-  getFrame: (id: string) => ObjectData | undefined;
-  addFrame: (newFrame: ObjectData) => void;
-  updateFrame: (updatedFrame: ObjectData, triggerSelect?: boolean) => void;
-  deleteFrame: (id: string) => void;
+  getFrame: (ID: string) => FrameData | undefined;
+  addFrame: (newFrame: FrameData) => void;
+  updateFrame: (updatedFrame: FrameData, triggerSelect?: boolean) => void;
+  deleteFrame: (ID: string) => void;
   // Element handling
   getElementIDs: (frameID: string) => string[];
-  getElement: (frameID: string, elementID: string) => ObjectData | undefined;
-  addElement: (frame: ObjectData, newElement: ObjectData) => void;
+  getElement: (frameID: string, ID: string) => FrameElementData | undefined;
+  addElement: (frame: FrameData, newElement: FrameElementData) => void;
   updateElement: (
-    frameId: string,
-    updatedElement: ObjectData,
+    frameID: string,
+    updatedElement: FrameElementData,
     triggerSelect?: boolean,
   ) => void;
-  deleteElement: (frameID: string, id: string) => void;
+  deleteElement: (frameID: string, ID: string) => void;
   // Text handling
-  updateTextValue: (
-    frameID: string,
-    elementID: string,
-    textValue: string,
-  ) => void;
-  toggleTextEditing: (
-    frameID: string,
-    elementID: string,
-    mode: boolean,
-  ) => void;
+  updateTextValue: (frameID: string, ID: string, textValue: string) => void;
+  toggleTextEditing: (frameID: string, ID: string, mode: boolean) => void;
   // Links handling
   setLinkRole: (
     frameID: string,
-    elementID: string,
+    ID: string,
     role: "parent" | "child" | "none",
   ) => void;
-  getRoleLinks: (role: "parent" | "child", filterID?: string) => ObjectData[];
+  getRoleElements: (
+    role: "parent" | "child",
+    filterID?: string,
+  ) => FrameElementData[];
   // Image handling
-  setImage: (
-    frameID: string,
-    elementID: string,
-    image: HTMLImageElement,
-  ) => void;
-};
-
-type LinkStore = {
-  links: LinkData[];
-  getRelatedLinks: (elementID: string, role: string) => Link[] | Link | null;
-  getSiblingLinks: (elementID: string) => Link[] | null;
-  addLink: (newLink: LinkData) => void;
-  removeLink: (link: LinkData) => void;
-  removeRelatedLinks: (elementID: string) => void;
-  updateLinkedText: (link: Link, textValue: string) => void;
-  compareLinks: (fLink: LinkData, sLink: LinkData) => boolean;
+  setImage: (frameID: string, ID: string, image: HTMLImageElement) => void;
+  // Fill color handling
+  setFillColor: (props: {
+    frameID?: string;
+    ID: string;
+    color?: RGBColor;
+    opacity?: number;
+  }) => void;
 };
 
 type EditorStore = {
@@ -86,18 +92,24 @@ type EditorStore = {
 const frameID = uuidv4();
 const text1ID = uuidv4();
 const text2ID = uuidv4();
-const initialFrames: ObjectData[] = [
+const initialFrames: FrameData[] = [
   {
-    id: frameID,
+    ID: frameID,
     name: "Horizontal 4:5",
     width: 310,
     height: 90,
     x: 30,
     y: 250,
     type: "Frame" as ObjectType,
+    fill: {
+      R: 255,
+      G: 255,
+      B: 255,
+    },
+    fillOpacity: 100,
     elements: [
       {
-        id: text1ID,
+        ID: text1ID,
         frameID: frameID,
         name: "Parent element",
         width: 270,
@@ -108,9 +120,15 @@ const initialFrames: ObjectData[] = [
         textValue: "Ha itt atirod",
         beingEdited: false,
         linkRole: "parent",
-      } as ObjectData,
+        fill: {
+          R: 200,
+          G: 0,
+          B: 0,
+        },
+        fillOpacity: 50,
+      } as TextData,
       {
-        id: text2ID,
+        ID: text2ID,
         frameID: frameID,
         name: "Child element",
         width: 270,
@@ -121,20 +139,26 @@ const initialFrames: ObjectData[] = [
         textValue: "itt is atirja",
         beingEdited: false,
         linkRole: "child",
-      } as ObjectData,
-    ] as ObjectData[],
-  },
+        fill: {
+          R: 0,
+          G: 0,
+          B: 0,
+        },
+        fillOpacity: 100,
+      } as TextData,
+    ] as FrameElementData[],
+  } as FrameData,
 ];
 
-const initialLinks: LinkData[] = [
+const initialLinks: Link[] = [
   {
-    parentLink: {
+    parentElement: {
+      ID: text1ID,
       frameID: frameID,
-      elementID: text1ID,
     },
-    childLink: {
+    childElement: {
+      ID: text2ID,
       frameID: frameID,
-      elementID: text2ID,
     },
   },
 ];
@@ -142,34 +166,32 @@ const initialLinks: LinkData[] = [
 export const useLinkStore = create<LinkStore>((set, get) => ({
   links: initialLinks,
   getParentLinks: () => {
-    return get().links.map((link) => link.parentLink);
+    return get().links.map((link) => link.parentElement);
   },
   getChildLinks: () => {
-    return get().links.map((link) => link.childLink);
+    return get().links.map((link) => link.childElement);
   },
-  getRelatedLinks: (elementID, role) => {
+  getRelatedElements: (ID, role) => {
     if (role === "child") {
-      const parentLink = get().links.find(
-        (link) => link.childLink.elementID === elementID,
+      const currentLink = get().links.find(
+        (link) => link.childElement.ID === ID,
       );
-      if (!parentLink) return null;
-      return parentLink.parentLink;
+      if (!currentLink) return null;
+      return currentLink.parentElement;
     }
     const links = get()
-      .links.filter((link) => link.parentLink.elementID === elementID)
-      .map((link) => link.childLink);
+      .links.filter((link) => link.parentElement.ID === ID)
+      .map((link) => link.childElement);
     return links.length > 0 ? links : null;
   },
-  getSiblingLinks: (elementID) => {
-    const parentLink = get().links.find(
-      (link) => link.childLink.elementID === elementID,
-    );
-    if (!parentLink) return null;
+  getSiblingElements: (ID) => {
+    const currentLink = get().links.find((link) => link.childElement.ID === ID);
+    if (!currentLink) return null;
     const siblings = get()
       .links.filter(
-        (link) => link.parentLink.elementID === parentLink.parentLink.elementID,
+        (link) => link.parentElement.ID === currentLink.parentElement.ID,
       )
-      .map((link) => link.childLink);
+      .map((link) => link.childElement);
     return siblings.length > 0 ? siblings : null;
   },
   addLink: (newLink) => {
@@ -185,25 +207,23 @@ export const useLinkStore = create<LinkStore>((set, get) => ({
   updateLinkedText: (link, textValue) => {
     const linkedElement = useFrameStore
       .getState()
-      .getElement(link.frameID, link.elementID);
+      .getElement(link.frameID, link.ID);
     if (!linkedElement || linkedElement.type !== "Text") return;
     const updatedLinkedElement = { ...linkedElement, textValue: textValue };
     useFrameStore.getState().updateElement(link.frameID, updatedLinkedElement);
   },
   compareLinks: (fLink, sLink) => {
     return (
-      fLink.parentLink.frameID === sLink.parentLink.frameID &&
-      fLink.parentLink.elementID === sLink.parentLink.elementID &&
-      fLink.childLink.frameID === sLink.childLink.frameID &&
-      fLink.childLink.elementID === sLink.childLink.elementID
+      fLink.parentElement.frameID === sLink.parentElement.frameID &&
+      fLink.parentElement.ID === sLink.parentElement.ID &&
+      fLink.childElement.frameID === sLink.childElement.frameID &&
+      fLink.childElement.ID === sLink.childElement.ID
     );
-  }, 
-  removeRelatedLinks: (elementID) => {
+  },
+  removeRelatedLinks: (ID) => {
     set((state) => ({
       links: state.links.filter(
-        (link) =>
-          link.parentLink.elementID !== elementID &&
-          link.childLink.elementID !== elementID,
+        (link) => link.parentElement.ID !== ID && link.childElement.ID !== ID,
       ),
     }));
   },
@@ -214,14 +234,14 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
   frames: initialFrames,
   setFrames: (newFrames) => set({ frames: newFrames }),
   // Frame handling
-  getFrameIDs: () => get().frames.map((frame) => frame.id),
-  getFrame: (id) => get().frames.find((frame) => frame.id === id),
+  getFrameIDs: () => get().frames.map((frame) => frame.ID),
+  getFrame: (ID) => get().frames.find((frame) => frame.ID === ID),
   addFrame: (newFrame) =>
     set((state) => ({ frames: [...state.frames, newFrame] })),
   updateFrame: (updatedFrame, triggerSelect = true) => {
     set((state) => ({
       frames: state.frames.map((frame) => {
-        if (frame.id === updatedFrame.id) {
+        if (frame.ID === updatedFrame.ID) {
           if (triggerSelect)
             useEditorStore.setState({ selectedObject: updatedFrame });
           return updatedFrame;
@@ -230,9 +250,9 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
       }),
     }));
   },
-  deleteFrame: (id) => {
+  deleteFrame: (ID) => {
     set((state) => ({
-      frames: state.frames.filter((frame) => frame.id !== id),
+      frames: state.frames.filter((frame) => frame.ID !== ID),
     }));
     useEditorStore.setState({ selectedObject: null });
   },
@@ -241,13 +261,13 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
     return (
       get()
         .getFrame(frameID)
-        ?.elements?.map((element) => element.id) ?? []
+        ?.elements?.map((element) => element.ID) ?? []
     );
   },
-  getElement: (frameID, elementID) =>
+  getElement: (frameID, ID) =>
     get()
       .getFrame(frameID)
-      ?.elements?.find((element) => element.id === elementID),
+      ?.elements?.find((element) => element.ID === ID),
   addElement: (frame, newElement) => {
     if (!frame) return;
     const updatedFrame = {
@@ -262,25 +282,25 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
     const updatedFrame = {
       ...frame,
       elements: frame.elements?.map((element) =>
-        element.id === updatedElement.id ? updatedElement : element,
+        element.ID === updatedElement.ID ? updatedElement : element,
       ),
     };
     if (triggerSelect)
       useEditorStore.setState({ selectedObject: updatedElement });
     get().updateFrame(updatedFrame, false);
   },
-  deleteElement: (frameID, id) => {
+  deleteElement: (frameID, ID) => {
     const frame = get().getFrame(frameID);
     if (!frame) return;
     const updatedFrame = {
       ...frame,
-      elements: frame.elements?.filter((element) => element.id !== id),
+      elements: frame.elements?.filter((element) => element.ID !== ID),
     };
     get().updateFrame(updatedFrame);
   },
   // Text handling
-  updateTextValue: (frameID, elementID, textValue) => {
-    const element = get().getElement(frameID, elementID);
+  updateTextValue: (frameID, ID, textValue) => {
+    const element = get().getElement(frameID, ID) as TextData | undefined;
     if (!element || element.type !== "Text") return;
     const updatedElement = { ...element, textValue: textValue };
     if (!element.linkRole) {
@@ -293,67 +313,68 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
       get().updateElement(frameID, updatedElement);
       const links = useLinkStore
         .getState()
-        .getRelatedLinks(elementID, "parent") as Link[];
+        .getRelatedElements(ID, "parent") as FrameElement[];
       if (!links) return;
       links.forEach((link) => {
         useLinkStore.getState().updateLinkedText(link, textValue);
       });
     } else if (element.linkRole === "child") {
       // Child element
-      const parentLink = useLinkStore.getState().getRelatedLinks(elementID, "child") as Link | null;
+      const parentLink = useLinkStore
+        .getState()
+        .getRelatedElements(ID, "child") as FrameElement | null;
       if (!parentLink) return;
       useLinkStore.getState().updateLinkedText(parentLink, textValue);
-      const links = useLinkStore.getState().getSiblingLinks(elementID);
+      const links = useLinkStore.getState().getSiblingElements(ID);
       if (!links) return;
       links.forEach((link) => {
         useLinkStore.getState().updateLinkedText(link, textValue);
       });
     }
   },
-  toggleTextEditing: (frameID, elementID, mode) => {
-    const element = get().getElement(frameID, elementID);
+  toggleTextEditing: (frameID, ID, mode) => {
+    const element = get().getElement(frameID, ID) as TextData | undefined;
     if (!element || element.type !== "Text") return;
     const updatedElement = { ...element, beingEdited: mode };
     get().updateElement(frameID, updatedElement);
   },
   // Links handling
-  setLinkRole: (frameID, elementID, role) => {
-    const element = get().getElement(frameID, elementID);
-    if (!element) return;
+  setLinkRole: (frameID, ID, role) => {
+    const element = get().getElement(frameID, ID) as TextData | undefined;
+    if (!element || element.type !== "Text") return;
     const updatedElement = {
       ...element,
       linkRole: role === "none" ? undefined : role,
     };
     get().updateElement(frameID, updatedElement);
   },
-  getRoleLinks: (role, filterID) => {
+  getRoleElements: (role, filterID) => {
+    // TODO: Okos szerint nem typesafe a '(element as TextData).linkRole', type guard function kene
     const linkableElements = get()
       .frames.flatMap((frame) => frame.elements ?? [])
-      .filter((element) => element.linkRole === role);
+      .filter((element) => (element as TextData).linkRole === role);
     if (filterID) {
       if (role === "parent") {
         // show only other parent elements
         const parentLink = useLinkStore
           .getState()
-          .getRelatedLinks(filterID, "child") as Link | null;
+          .getRelatedElements(filterID, "child") as FrameElement | null;
         if (!parentLink) return linkableElements;
         const filteredElements = linkableElements.filter(
-          (element) => element.id !== parentLink.elementID,
+          (element) => element.ID !== parentLink.ID,
         );
         return filteredElements;
-      } else if ((role = "child")) {
+      } else if (role === "child") {
         // got a filterID, so this is called in a Parent element.
         // get already children links
         const relatedLinks = useLinkStore
           .getState()
-          .getRelatedLinks(filterID, "parent") as Link[] | null;
+          .getRelatedElements(filterID, "parent") as FrameElement[] | null;
         if (!relatedLinks) return linkableElements;
         // filter out elements which are already linked to this Parent element.
         const filteredElements = linkableElements.filter((element) => {
           const isLinked = relatedLinks?.some((link) => {
-            return (
-              element.id === link.elementID && element.frameID === link.frameID
-            );
+            return element.ID === link.ID && element.frameID === link.frameID;
           });
           return !isLinked;
         });
@@ -363,11 +384,28 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
     return linkableElements;
   },
   // Image handling
-  setImage: (frameID, elementID, image) => {
-    const element = get().getElement(frameID, elementID);
+  setImage: (frameID, ID, image) => {
+    const element = get().getElement(frameID, ID) as PictureData | undefined;
     if (!element || element.type !== "Image") return;
     const updatedElement = { ...element, image: image };
     get().updateElement(frameID, updatedElement);
+  },
+  // Fill color handling
+  setFillColor: ({ frameID, ID, color, opacity }) => {
+    const element = frameID
+      ? get().getElement(frameID, ID)
+      : get().getFrame(ID);
+    if (!element) return;
+    const updatedElement = {
+      ...element,
+      fill: color ?? element.fill,
+      fillOpacity: opacity ?? element.fillOpacity,
+    };
+    if (frameID) {
+      get().updateElement(frameID, updatedElement as FrameElementData);
+    } else {
+      get().updateFrame(updatedElement as FrameData);
+    }
   },
 }));
 

@@ -2,27 +2,26 @@ import { useEditorStore, useFrameStore } from "../store";
 import "overlayscrollbars/overlayscrollbars.css";
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 import "./customScroll.css";
+import type { FrameData, FrameElementData } from "../_utils/editorTypes";
 
 export function LayersPanel() {
-  let displayedElements;
+  let displayedFrame;
   const selectedObject = useEditorStore((state) => state.selectedObject);
   const setSelectedObject = useEditorStore((state) => state.setSelectedObject);
   const getFrame = useFrameStore((state) => state.getFrame);
   const userMode = useEditorStore((state) => state.userMode);
-  const getRoleLinks = useFrameStore((state) => state.getRoleLinks);
+  const getRoleElements = useFrameStore((state) => state.getRoleElements);
 
   if (userMode === "designer") {
     if (!selectedObject) {
       return null;
     }
-    if (selectedObject.frameID) {
-      displayedElements = getFrame(selectedObject.frameID);
+    if ((selectedObject as FrameElementData).frameID) {
+      displayedFrame = getFrame((selectedObject as FrameElementData).frameID);
     } else {
-      displayedElements = selectedObject;
-      if (selectedObject?.elements?.length === 0) {
-        return null;
-      }
+      displayedFrame = selectedObject as FrameData;
     }
+    if (displayedFrame?.elements.length === 0) return null;
     return (
       <div className="sidepanel flex flex-col overflow-hidden">
         <div className="px-4 pb-2 pt-4 text-xs font-semibold">Elements</div>
@@ -32,11 +31,11 @@ export function LayersPanel() {
           }}
         >
           <div className="flex-1 space-y-1.5 px-1.5 pb-2">
-            {displayedElements?.elements?.map((element) => (
+            {displayedFrame?.elements?.map((element) => (
               <div
-                key={element.id}
+                key={element.ID}
                 className={
-                  element.id === selectedObject.id
+                  element.ID === (selectedObject as FrameElementData).ID
                     ? "overflow-hidden overflow-ellipsis whitespace-nowrap rounded-md bg-white/5 px-2.5 py-1.5 text-xs text-white"
                     : "overflow-hidden overflow-ellipsis whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs text-neutral-400 hover:bg-white hover:bg-opacity-5"
                 }
@@ -65,7 +64,7 @@ export function LayersPanel() {
     );
   }
 
-  const elements = getRoleLinks("parent");
+  const elements = getRoleElements("parent");
   return (
     <div className="sidepanel flex flex-col overflow-hidden">
       <div className="px-4 pb-2 pt-4 text-xs font-semibold">Elements</div>
@@ -75,9 +74,9 @@ export function LayersPanel() {
         <div className="flex-1 space-y-1.5 px-1.5 pb-2">
           {elements.map((element) => (
             <div
-              key={element.id}
+              key={element.ID}
               className={
-                element.id === selectedObject?.id
+                element.ID === (selectedObject as FrameElementData).ID
                   ? "overflow-hidden overflow-ellipsis whitespace-nowrap rounded-md bg-white/5 px-2.5 py-1.5 text-xs text-white"
                   : "overflow-hidden overflow-ellipsis whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs text-neutral-400 hover:bg-white hover:bg-opacity-5"
               }

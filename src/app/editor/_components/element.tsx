@@ -1,21 +1,25 @@
 "use client";
 
-import type { ObjectData } from "../page";
 import type Konva from "konva";
 import { Html } from "react-konva-utils";
 import { Rect, Transformer, Text, Image as KImage } from "react-konva";
 import { useEditorStore, useFrameStore } from "../store";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import useImage from "use-image";
+import type {
+  PictureData,
+  TextData,
+  FrameElementData,
+} from "../_utils/editorTypes";
+import { TinyColor } from "@ctrl/tinycolor";
 
 interface ElementProps {
-  element: ObjectData;
+  element: FrameElementData;
   frameXY: { x: number; y: number };
 }
 interface ElementTextProps {
   props: CommonProps;
   isSelected: boolean;
-  element: ObjectData;
+  element: TextData;
   elementRef: Konva.Text;
   setElementRef: (ref: Konva.Text) => void;
 }
@@ -84,27 +88,26 @@ function ElementText({
   // After drawing a text element switch to edit mode
   useEffect(() => {
     if (element.beingDrawn !== undefined && !element.beingDrawn) {
-      toggleTextEditing(element.frameID!, element.id, true);
+      toggleTextEditing(element.frameID, element.ID, true);
     }
-  }, [element.beingDrawn, toggleTextEditing, element.frameID, element.id]);
+  }, [element.beingDrawn, toggleTextEditing, element.frameID, element.ID]);
 
   // If the element gets unselected, turn off beingEdited
   useEffect(() => {
     if (!isSelected && element.beingEdited) {
-      toggleTextEditing(element.frameID!, element.id, false);
+      toggleTextEditing(element.frameID, element.ID, false);
     }
   }, [isSelected, element, toggleTextEditing]);
 
   // Handle edit mode turn off outside of this function, so we can set the proper behavior
   const handleOnBlur = () => {
-    if (!element.frameID) return;
-    if (!textAreaRef) return;
+    if (!element.frameID || !textAreaRef) return;
     const inputValue = textAreaRef.value;
     if (inputValue !== element.textValue && inputValue !== "") {
-      updateTextValue(element.frameID, element.id, inputValue);
+      updateTextValue(element.frameID, element.ID, inputValue);
     } else if (inputValue === "") {
       // remove if empty
-      deleteElement(element.frameID, element.id);
+      deleteElement(element.frameID, element.ID);
     }
   };
 
@@ -122,7 +125,7 @@ function ElementText({
             onBlur={handleOnBlur}
             onKeyDown={(e) => {
               if (e.key === "Escape") {
-                toggleTextEditing(element.frameID!, element.id, false);
+                toggleTextEditing(element.frameID, element.ID, false);
                 handleOnBlur();
               }
             }}
@@ -146,10 +149,8 @@ function ElementText({
           elementRef.scaleX(1);
           elementRef.scaleY(1);
         }}
-        onDblClick={() =>
-          toggleTextEditing(element.frameID!, element.id, true)
-        }
-        onDblTap={() => toggleTextEditing(element.frameID!, element.id, true)}
+        onDblClick={() => toggleTextEditing(element.frameID, element.ID, true)}
+        onDblTap={() => toggleTextEditing(element.frameID, element.ID, true)}
         visible={!element.beingEdited}
         {...props}
       />
@@ -160,7 +161,7 @@ function ElementText({
 export function Element({ element, frameXY }: ElementProps) {
   const tool = useEditorStore((state) => state.tool);
   const isSelected = useEditorStore(
-    (state) => state.selectedObject?.id === element.id,
+    (state) => (state.selectedObject as FrameElementData)?.ID === element.ID,
   );
   const setStoreSelectedObject = useEditorStore(
     (state) => state.setSelectedObject,
@@ -174,7 +175,6 @@ export function Element({ element, frameXY }: ElementProps) {
   const [elementRef, setElementRef] = useState<
     Konva.Rect | Konva.Text | Konva.Image | null
   >(null);
-  const [image] = useImage("https://cataas.com/cat");
 
   // Attach transformer to the element
   useEffect(() => {
@@ -186,14 +186,21 @@ export function Element({ element, frameXY }: ElementProps) {
 
   // Breaks element drawing, hotfixed with text drawing indicator
   const commonProps = useMemo<CommonProps>(() => {
+    const { R, G, B } = element.fill;
+    const color = new TinyColor({
+      r: R,
+      g: G,
+      b: B,
+      a: element.fillOpacity / 100,
+    });
     return {
-      id: element.id,
+      id: element.ID,
       frameID: element.frameID,
       x: element.x + frameXY.x,
       y: element.y + frameXY.y,
       width: element.width,
       height: element.height,
-      fill: "black",
+      fill: color.toHex8String(),
       draggable: draggable,
       onClick: setSelectedObject,
       onTap: setSelectedObject,
@@ -242,28 +249,17 @@ export function Element({ element, frameXY }: ElementProps) {
       {element.type === "Rectangle" && (
         <Rect {...commonProps} ref={setElementRef} />
       )}
-      {element.type === "Image" && element.image && (
+      {element.type === "Image" && (element as PictureData).image && (
         <KImage
-          image={element.image}
+          image={(element as PictureData).image}
           ref={setElementRef}
           {...commonProps}
-          fill=""
-        />
-      )}
-      {element.type === "Image" && !element.image && (
-        <KImage
-          image={image}
-          ref={setElementRef}
-          {...commonProps}
-          fill=""
-          width={image?.width}
-          height={image?.height}
         />
       )}
       {element.type === "Text" && (
         <ElementText
           isSelected={isSelected}
-          element={element}
+          element={element as TextData}
           props={commonProps}
           elementRef={elementRef as Konva.Text}
           setElementRef={setElementRef}
@@ -285,7 +281,7 @@ export function Element({ element, frameXY }: ElementProps) {
           onDragEnd={(e) => {
             e.cancelBubble = true;
           }}
-          enabledAnchors={element.beingEdited ? [] : undefined}
+          enabledAnchors={(element as TextData).beingEdited ? [] : undefined}
         />
       )}
       {element.beingDrawn && (

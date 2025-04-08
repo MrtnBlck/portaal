@@ -1,5 +1,6 @@
 import { P_svg } from "./P_svg";
 import { useFrameStore, useEditorStore } from "../store";
+import type { FrameData, FrameElementData } from "../_utils/editorTypes";
 
 export function VariantsPanel() {
   const frames = useFrameStore((state) => state.frames);
@@ -16,8 +17,8 @@ export function VariantsPanel() {
       <div className="flex flex-col gap-1.5 px-1.5">
         {frames.map((frame) => (
           <div
-            key={frame.id}
-            className={`rounded-md px-2.5 py-1.5 text-xs hover:bg-white hover:bg-opacity-5 ${selectedObject?.id === frame.id || selectedObject?.frameID === frame.id ? "bg-white bg-opacity-5" : "text-neutral-400"}`}
+            key={frame.ID}
+            className={`rounded-md px-2.5 py-1.5 text-xs hover:bg-white hover:bg-opacity-5 ${(selectedObject as FrameData)?.ID === frame.ID || (selectedObject as FrameElementData)?.frameID === frame.ID ? "bg-white bg-opacity-5" : "text-neutral-400"}`}
             onClick={() => setSelectedObject(frame)}
           >
             {frame.name}

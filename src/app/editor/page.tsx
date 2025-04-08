@@ -9,35 +9,6 @@ import { useFrameStore, useEditorStore } from "./store";
 import { useStageUtils } from "./_utils/useStageUtils";
 import { EventListener } from "./_utils/eventListener";
 
-export type ToolState = {
-  type: "move" | "hand" | "frame" | "rectangle" | "text" | "image" | "wip";
-  method: "selected" | "toggle";
-};
-
-export type ObjectType = "Frame" | "Image" | "Text" | "Rectangle" | "Group";
-
-export interface Link {
-  frameID: string;
-  elementID: string;
-}
-
-export interface ObjectData {
-  id: string;
-  frameID?: string;
-  name: string;
-  width: number;
-  height: number;
-  x: number;
-  y: number;
-  type: ObjectType;
-  elements?: ObjectData[];
-  textValue?: string;
-  beingDrawn?: boolean;
-  beingEdited?: boolean;
-  image?: HTMLImageElement | null;
-  linkRole?: "parent" | "child";
-}
-
 export default function EditorPage() {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 

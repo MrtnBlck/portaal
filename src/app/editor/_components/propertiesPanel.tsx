@@ -4,14 +4,22 @@ import { PlaceholderInput } from "./placeholderInput";
 import "overlayscrollbars/overlayscrollbars.css";
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 import { LinkSettings, LinkList } from "./linkSettings";
-
+import { ColorInput, ColorOpacityInput } from "./colorInput";
+import type {
+  FrameData,
+  FrameElementData,
+  TextData,
+} from "../_utils/editorTypes";
 
 export function PropertiesPanel() {
-  const selectedObject = useEditorStore((state) => state.selectedObject);
+  const selectedObject = useEditorStore((state) => state.selectedObject) as
+    | FrameData
+    | FrameElementData
+    | null;
   const updateFrame = useFrameStore((state) => state.updateFrame);
   const updateElement = useFrameStore((state) => state.updateElement);
   const userMode = useEditorStore((state) => state.userMode);
-  const getRoleLinks = useFrameStore((state) => state.getRoleLinks);
+  const getRoleElements = useFrameStore((state) => state.getRoleElements);
   const updateTextValue = useFrameStore((state) => state.updateTextValue);
 
   if (userMode === "designer") {
@@ -21,10 +29,12 @@ export function PropertiesPanel() {
 
     const setValue = (property: string, value: number) => {
       if (selectedObject.type === "Frame") {
-        updateFrame({ ...selectedObject, [property]: value });
-      } else if (selectedObject.frameID) {
-        updateElement(selectedObject.frameID, {
-          ...selectedObject,
+        const sFrame = selectedObject as FrameData;
+        updateFrame({ ...sFrame, [property]: value });
+      } else {
+        const sElement = selectedObject as FrameElementData;
+        updateElement(sElement.frameID, {
+          ...sElement,
           [property]: value,
         });
       }
@@ -33,7 +43,11 @@ export function PropertiesPanel() {
     return (
       <div className="sidepanel flex flex-col overflow-hidden">
         <div className="p-3 text-sm font-bold">{selectedObject.type}</div>
-        <OverlayScrollbarsComponent options={{ scrollbars: { theme: "os-theme-light", autoHide: "leave" } }}>
+        <OverlayScrollbarsComponent
+          options={{
+            scrollbars: { theme: "os-theme-light", autoHide: "leave" },
+          }}
+        >
           <div className="pb-3">
             <div className="px-3 pb-1 text-xs font-medium text-neutral-400">
               Position
@@ -80,40 +94,70 @@ export function PropertiesPanel() {
               />
             </div>
           </div>
-          {selectedObject.type === "Text" && <div className="pb-2">
-            <div className="px-3 pb-1 text-xs font-medium text-neutral-400">
-              Links
+          {selectedObject.type !== "Image" && (
+            <div className="pb-2">
+              <div className="px-3 pb-1 text-xs font-medium text-neutral-400">
+                Color
+              </div>
+              <div className="flex gap-1.5 px-2.5">
+                <ColorInput
+                  ID={selectedObject.ID}
+                  frameID={
+                    selectedObject.type === "Frame"
+                      ? undefined
+                      : (selectedObject as FrameElementData).frameID
+                  }
+                  fillOpacity={selectedObject.fillOpacity}
+                  fill={selectedObject.fill}
+                />
+                <ColorOpacityInput
+                  ID={selectedObject.ID}
+                  frameID={
+                    selectedObject.type === "Frame"
+                      ? undefined
+                      : (selectedObject as FrameElementData).frameID
+                  }
+                  fillOpacity={selectedObject.fillOpacity}
+                />
+              </div>
             </div>
-            <div className="px-2.5 gap-1.5 flex flex-col">
-              <LinkSettings/>
-              <LinkList/>
+          )}
+          {selectedObject.type === "Text" && (
+            <div className="pb-2">
+              <div className="px-3 pb-1 text-xs font-medium text-neutral-400">
+                Links
+              </div>
+              <div className="flex flex-col gap-1.5 px-2.5">
+                <LinkSettings />
+                <LinkList />
+              </div>
             </div>
-          </div>}
+          )}
         </OverlayScrollbarsComponent>
       </div>
     );
   }
 
+  const sElement = selectedObject as FrameElementData;
   const setValue = (value: string) => {
-    if (!selectedObject?.frameID) return;
-    updateTextValue(selectedObject.frameID, selectedObject.id, value);
+    updateTextValue(sElement.frameID, sElement.ID, value);
   };
 
   return (
     <div className="sidepanel flex flex-col overflow-hidden">
       <div className="p-3 text-sm font-bold">Linked elements</div>
       <OverlayScrollbarsComponent
-        options={{ scrollbars: { theme: "os-theme-light", autoHide: "leave" }  }}
+        options={{ scrollbars: { theme: "os-theme-light", autoHide: "leave" } }}
       >
         <div className="flex-1 space-y-2 pb-2">
-          {getRoleLinks("parent").map((element) => (
-            <div key={element.id} className="pb-0.5">
+          {getRoleElements("parent").map((element) => (
+            <div key={element.ID} className="pb-0.5">
               <div className="px-3 pb-1 text-xs font-medium text-neutral-400">
                 {element.name}
               </div>
               <div
                 className={
-                  selectedObject?.id === element.id
+                  sElement.ID === element.ID
                     ? "px-2.5"
                     : "px-2.5 text-neutral-400"
                 }
@@ -122,7 +166,7 @@ export function PropertiesPanel() {
                   setValue={(value) => {
                     setValue(value);
                   }}
-                  value={element.textValue}
+                  value={(element as TextData).textValue}
                   element={element}
                 />
               </div>

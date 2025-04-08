@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Input } from "~/components/ui/input";
 import { useEditorStore } from "../store";
-import type { ObjectData } from "../page";
+import type { ObjectData } from "../_utils/editorTypes";
 
 interface placeholderInputProps {
   value: string | undefined;
