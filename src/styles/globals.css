@@ -83,10 +83,38 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  .customPopup {
+    @apply rounded-lg border border-neutral-800 !bg-[#1F1F1FEB]/90 shadow-[0px_0px_5px_4px_rgba(0,_0,_0_0.05)] backdrop-blur-lg;
+  }
+
+  .customPopup .react-colorful {
+    @apply size-fit;
+  }
+
+  .customPopup .react-colorful__saturation-pointer, .customPopup .react-colorful__hue-pointer, .customPopup .react-colorful__alpha-pointer {
+    @apply size-3.5;
+    border-width: 3px;
+  }
+  .customPopup .react-colorful__saturation {
+    @apply rounded size-52;
+  }
+
+  .customPopup .react-colorful__saturation .react-colorful__interactive {
+    height: 205px;
+  }
+
+  /* .customPopup .react-colorful__interactive  */
   
+  .customPopup .react-colorful__hue, .customPopup .react-colorful__alpha {
+    @apply rounded-lg h-3.5 mt-3 mx-0.5;
+  } 
+
   /* Hide scrollbar for IE, Edge and Firefox */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
 }

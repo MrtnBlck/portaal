@@ -96,10 +96,7 @@ export function ColorInput({
             size="none"
           />
         </PopoverTrigger>
-        <PopoverContent
-          className="w-fit border-none bg-transparent shadow-none"
-          sideOffset={5}
-        >
+        <PopoverContent className="customPopup w-fit p-3" sideOffset={5}>
           <HexAlphaColorPicker
             color={currentColor.toHex8String()}
             onChange={(e) => {

@@ -27,7 +27,9 @@ import type { FrameElement, TextData } from "../_utils/editorTypes";
 
 export function LinkSettings() {
   const [open, setOpen] = useState(false);
-  const selectedObject = useEditorStore((state) => state.selectedObject) as TextData | null;
+  const selectedObject = useEditorStore(
+    (state) => state.selectedObject,
+  ) as TextData | null;
   const getRoleElements = useFrameStore((state) => state.getRoleElements);
   const addLink = useLinkStore((state) => state.addLink);
   const setLinkRole = useFrameStore((state) => state.setLinkRole);
@@ -62,7 +64,7 @@ export function LinkSettings() {
           {selectedObject.linkRole ?? "none"}
           <ChevronsUpDown className="h-3.5 w-3.5 text-neutral-400 group-hover:text-white" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="min-w-20 rounded-lg border border-neutral-800 bg-[#1F1F1FEB]/90 shadow-[0px_0px_5px_4px_rgba(0,_0,_0,_0.05)] backdrop-blur-lg">
+        <DropdownMenuContent className="customPopup min-w-20">
           {linkRoles.map((lRole) => (
             <DropdownMenuItem
               key={lRole}
@@ -95,7 +97,7 @@ export function LinkSettings() {
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-44 rounded-none border-none bg-transparent p-0">
-          <Command className="max-h-36 min-h-28 rounded-lg border border-neutral-800 bg-[#1F1F1FEB]/90 shadow-[0px_0px_5px_4px_rgba(0,_0,_0,_0.05)] backdrop-blur-lg">
+          <Command className="customPopup max-h-36 min-h-28">
             <CommandInput
               placeholder="Search element..."
               className="h-9 text-xs placeholder:text-neutral-400"
@@ -130,13 +132,18 @@ export function LinkSettings() {
 }
 
 export function LinkList() {
-  const selectedObject = useEditorStore((state) => state.selectedObject) as TextData | null;
+  const selectedObject = useEditorStore(
+    (state) => state.selectedObject,
+  ) as TextData | null;
   const getRelatedElements = useLinkStore((state) => state.getRelatedElements);
   const links = useLinkStore((state) => state.links);
   if (!links || !selectedObject?.linkRole) return null;
   if (selectedObject.linkRole === "child") {
     // Child element
-    const pElement = getRelatedElements(selectedObject.ID, "child") as FrameElement | null;
+    const pElement = getRelatedElements(
+      selectedObject.ID,
+      "child",
+    ) as FrameElement | null;
     if (!pElement) return null;
     const sElement = selectedObject as FrameElement;
     return <LinkListItem otherElement={sElement} displayedElement={pElement} />;
@@ -148,14 +155,29 @@ export function LinkList() {
     if (!cElements) return null;
     return cElements.map((element) => {
       const sElement = selectedObject as FrameElement;
-      return <LinkListItem otherElement={sElement} displayedElement={element} key={element.ID} />;
+      return (
+        <LinkListItem
+          otherElement={sElement}
+          displayedElement={element}
+          key={element.ID}
+        />
+      );
     });
   }
 }
 
-function LinkListItem({ otherElement, displayedElement }: { otherElement: FrameElement; displayedElement: FrameElement }) {
+function LinkListItem({
+  otherElement,
+  displayedElement,
+}: {
+  otherElement: FrameElement;
+  displayedElement: FrameElement;
+}) {
   const getElement = useFrameStore((state) => state.getElement);
-  const element = getElement(displayedElement.frameID, displayedElement.ID) as TextData | null;
+  const element = getElement(
+    displayedElement.frameID,
+    displayedElement.ID,
+  ) as TextData | null;
   const removeLink = useLinkStore((state) => state.removeLink);
   if (!element) return null;
   return (
