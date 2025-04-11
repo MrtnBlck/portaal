@@ -84,6 +84,7 @@ export const useStageUtils = () => {
         },
         fillOpacity: 100,
         beingDrawn: true,
+        selectedForExport: true,
       };
       addFrame(newFrame);
       currentDrawingElement.current = newFrame;
@@ -92,7 +93,7 @@ export const useStageUtils = () => {
     const targetAttrs = e.target.attrs as Konva.NodeConfig;
     if (!targetAttrs) return;
     const frameID = (
-      targetAttrs.parentID === undefined ? targetAttrs.id : targetAttrs.parentID
+      targetAttrs.frameID === undefined ? targetAttrs.id : targetAttrs.frameID
     ) as string;
     if (!frameID) return;
     const frame = getFrame(frameID);
@@ -118,7 +119,6 @@ export const useStageUtils = () => {
         x: pos.x - frame.x,
         y: pos.y - frame.y,
         type: "Rectangle" as ObjectType,
-        //fill: "#D9D9D9",
         fill: {
           R: 217,
           G: 217,

@@ -110,10 +110,7 @@ export function ColorInput({
                   G: g,
                   B: b,
                 },
-                opacity:
-                  newColor.format === "hex4" || newColor.format === "hex8"
-                    ? Math.round(a * 100)
-                    : fillOpacity,
+                opacity: Math.round(a * 100),
               });
               setInputValue(newColor.toHex());
             }}
@@ -159,6 +156,7 @@ export function ColorOpacityInput({
         frameID: frameID,
         opacity: newValue,
       });
+      setInputValue(`${newValue}%`);
     } else {
       setInputValue(formattedOpacity);
     }
@@ -181,7 +179,7 @@ export function ColorOpacityInput({
   return (
     <div className="group flex w-16 items-center rounded-md border border-neutral-700/50 bg-white/5">
       <Input
-        className="h-7 w-full rounded-none border-none px-1 pl-0 text-center !text-xs focus-visible:ring-0"
+        className="h-7 w-full rounded-none border-none px-1 text-center !text-xs focus-visible:ring-0"
         value={inputValue}
         onBlur={handleOnBlur}
         onChange={handleOnChange}

@@ -11,19 +11,21 @@ interface MenuWrapperProps {
   deleteObject: () => void;
 }
 
-export function MenuWrapper({
-  children,
-  deleteObject,
-}: MenuWrapperProps) {
+export function MenuWrapper({ children, deleteObject }: MenuWrapperProps) {
   const selectedObject = useEditorStore((state) => state.selectedObject);
 
   return (
     <ContextMenu modal={false}>
       <ContextMenuTrigger disabled={false}>{children}</ContextMenuTrigger>
-      <ContextMenuContent>
-        <ContextMenuItem>Context menu, content TBD</ContextMenuItem>
+      <ContextMenuContent className="customPopup min-h-36">
+        <ContextMenuItem className="text-xs hover:!bg-white/5">
+          Context menu, content TBD
+        </ContextMenuItem>
         {selectedObject && (
-          <ContextMenuItem onSelect={deleteObject}>
+          <ContextMenuItem
+            onSelect={deleteObject}
+            className="text-xs hover:!bg-white/5"
+          >
             Delete: {selectedObject.name}
           </ContextMenuItem>
         )}

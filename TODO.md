@@ -40,7 +40,7 @@
 - [x] ~/editor:: Frame resizing
 - [x] ~/editor:: Frame moving
 - [x] ~/editor:: Move/Hand tool (+shortcut)
-- [x] ~/editor:: Tooltips 
+- [x] ~/editor:: Tooltips
 - [ ] ~/editor:: Object hover
 - [x] ~/editor:: Frame deleting
 - [x] ~/editor:: Frame adding
@@ -48,14 +48,13 @@
 - [x] ~/editor:: Zoom (+shortcut)
 - [ ] ~/editor:: Select multiple things at once
 - [ ] ~/editor:: Copy/Paste/Cut (+shortcut)
-- [ ] ~/editor:: Frame content CRUD
-- [ ] ~/editor:: Text
-- [ ] ~/editor:: Image
-- [ ] ~/editor:: Mark elements as placeholders
-- [ ] ~/editor:: Force marked elements to be used on all frames
+- [x] ~/editor:: Frame content CRUD
+- [x] ~/editor:: Text
+- [x] ~/editor:: Image
+- [x] ~/editor:: Mark elements as placeholders
 - [ ] ~/editor:: Layering
 - [ ] ~/editor:: Grouping
-- [ ] ~/editor:: Export
+- [x] ~/editor:: Export
 - [ ] ~/register
 - [ ] ~/login
 - [ ] ~/profile

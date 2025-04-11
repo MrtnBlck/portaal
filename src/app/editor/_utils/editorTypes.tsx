@@ -8,18 +8,18 @@ export type ObjectType = "Frame" | "Image" | "Text" | "Rectangle" | "Group";
 export type Link = {
   parentElement: FrameElement;
   childElement: FrameElement;
-}
+};
 
 export type FrameElement = {
   ID: string;
   frameID: string;
-}
+};
 
 export type RGBColor = {
   R: number;
   G: number;
   B: number;
-}
+};
 
 export type ObjectData = {
   name: string;
@@ -31,21 +31,22 @@ export type ObjectData = {
   beingDrawn?: boolean;
   fill: RGBColor;
   fillOpacity: number;
-}
+};
 
 export type FrameElementData = ObjectData & FrameElement;
 
 export type FrameData = ObjectData & {
   ID: string;
+  selectedForExport: boolean;
   elements: FrameElementData[];
-}
+};
 
 export type PictureData = FrameElementData & {
   image: HTMLImageElement;
-}
+};
 
 export type TextData = FrameElementData & {
   textValue: string;
   beingEdited: boolean;
   linkRole?: "parent" | "child";
-}
+};

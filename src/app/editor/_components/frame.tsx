@@ -54,94 +54,96 @@ function FrameRect({
 
   return (
     <>
-      <Rect
-        id={frame.ID}
-        x={frame.x}
-        y={frame.y}
-        width={frame.width}
-        height={frame.height}
-        fill={color.toHex8String()}
-        onClick={() => {
-          if (selectedObject && (selectedObject as TextData).beingEdited) {
-            toggleTextEditing(
-              (selectedObject as TextData)?.frameID,
-              selectedObject.ID,
-              false,
-            );
-            return;
-          }
-          setSelectedObject();
-        }}
-        onTap={() => {
-          if (selectedObject && (selectedObject as TextData).beingEdited) {
-            toggleTextEditing(
-              (selectedObject as TextData)?.frameID,
-              selectedObject.ID,
-              false,
-            );
-            return;
-          }
-          setSelectedObject();
-        }}
-        ref={shapeRef}
-        onTransformEnd={() => {
-          const node = shapeRef.current;
-          if (node) {
-            const scaleX = node.scaleX();
-            const scaleY = node.scaleY();
-            const size = {
-              width: Math.round(Math.max(5, node.width() * scaleX)),
-              height: Math.round(Math.max(5, node.height() * scaleY)),
-            };
+      <Group id={`export${frame.ID}`}>
+        <Rect
+          id={frame.ID}
+          x={frame.x}
+          y={frame.y}
+          width={frame.width}
+          height={frame.height}
+          fill={color.toHex8String()}
+          onClick={() => {
+            if (selectedObject && (selectedObject as TextData).beingEdited) {
+              toggleTextEditing(
+                (selectedObject as TextData)?.frameID,
+                selectedObject.ID,
+                false,
+              );
+              return;
+            }
+            setSelectedObject();
+          }}
+          onTap={() => {
+            if (selectedObject && (selectedObject as TextData).beingEdited) {
+              toggleTextEditing(
+                (selectedObject as TextData)?.frameID,
+                selectedObject.ID,
+                false,
+              );
+              return;
+            }
+            setSelectedObject();
+          }}
+          ref={shapeRef}
+          onTransformEnd={() => {
+            const node = shapeRef.current;
+            if (node) {
+              const scaleX = node.scaleX();
+              const scaleY = node.scaleY();
+              const size = {
+                width: Math.round(Math.max(5, node.width() * scaleX)),
+                height: Math.round(Math.max(5, node.height() * scaleY)),
+              };
 
-            node.setSize(size);
-            node.scaleX(1);
-            node.scaleY(1);
-            // Set frame XY, upon update the group XY will be reset
-            updateFrame({
-              ...frame,
-              x: Math.round(node.x()),
-              y: Math.round(node.y()),
-              ...size,
-            });
-            setIsTransforming(false);
+              node.setSize(size);
+              node.scaleX(1);
+              node.scaleY(1);
+              // Set frame XY, upon update the group XY will be reset
+              updateFrame({
+                ...frame,
+                x: Math.round(node.x()),
+                y: Math.round(node.y()),
+                ...size,
+              });
+              setIsTransforming(false);
+            }
+          }}
+          onTransform={() => {
+            const textNode = titleRef.current;
+            const frameNode = shapeRef.current;
+            setIsTransforming(true);
+            if (textNode && frameNode) {
+              textNode.x(frameNode.x());
+              textNode.y(frameNode.y() + -20 * inverseScale);
+              setFrameXY({ x: frameNode.x(), y: frameNode.y() });
+            }
+          }}
+        />
+        <Group
+          clipFunc={
+            isSelected ||
+            (selectedObject as FrameElementData)?.frameID === frame.ID
+              ? undefined
+              : (ctx) => {
+                  ctx.rect(frame.x, frame.y, frame.width, frame.height);
+                }
           }
-        }}
-        onTransform={() => {
-          const textNode = titleRef.current;
-          const frameNode = shapeRef.current;
-          setIsTransforming(true);
-          if (textNode && frameNode) {
-            textNode.x(frameNode.x());
-            textNode.y(frameNode.y() + -20 * inverseScale);
-            setFrameXY({ x: frameNode.x(), y: frameNode.y() });
-          }
-        }}
-      />
-      <Group
-        clipFunc={
-          isSelected ||
-          (selectedObject as FrameElementData)?.frameID === frame.ID
-            ? undefined
-            : (ctx) => {
-                ctx.rect(frame.x, frame.y, frame.width, frame.height);
-              }
-        }
-      >
-        {frame.elements?.map((element) => {
-          if (isTransforming) {
+        >
+          {frame.elements?.map((element) => {
+            if (isTransforming) {
+              return (
+                <Element element={element} frameXY={frameXY} key={element.ID} />
+              );
+            }
             return (
-              <Element element={element} frameXY={frameXY} key={element.ID} />
+              <Element
+                element={element}
+                frameXY={{ x: frame.x, y: frame.y }}
+                key={element.ID}
+              />
             );
-          }
-          return (
-            <Element
-              element={element}
-              frameXY={{ x: frame.x, y: frame.y }}
-              key={element.ID}
-            />
-          );
-        })}
+          })}
+        </Group>
       </Group>
       {isSelected && (
         <Transformer
@@ -193,7 +195,7 @@ export function Frame({ ID }: { ID: string }) {
   if (!frame) return null;
 
   return (
-    <Layer id="myLayer">
+    <Layer>
       <Group
         ref={groupRef}
         draggable={draggable}

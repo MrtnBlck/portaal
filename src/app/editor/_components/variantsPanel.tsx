@@ -13,7 +13,9 @@ export function VariantsPanel() {
         <P_svg />
       </div>
       <div className="px-4 pb-3 font-medium outline-none">Untitled</div>
-      <div className="px-4 pb-1 text-xs text-neutral-400">Variants</div>
+      <div className="px-4 pb-1 text-xs font-semibold text-neutral-400">
+        Frames
+      </div>
       <div className="flex flex-col gap-1.5 px-1.5">
         {frames.map((frame) => (
           <div

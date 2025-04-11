@@ -69,6 +69,13 @@ type FrameStore = {
     color?: RGBColor;
     opacity?: number;
   }) => void;
+  // Export handling
+  getExportableFrames: () => {
+    ID: string;
+    name: string;
+    selectedForExport: boolean;
+  }[];
+  toggleExport: (ID: string) => void;
 };
 
 type EditorStore = {
@@ -101,6 +108,7 @@ const initialFrames: FrameData[] = [
     x: 30,
     y: 250,
     type: "Frame" as ObjectType,
+    selectedForExport: true,
     fill: {
       R: 255,
       G: 255,
@@ -406,6 +414,23 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
     } else {
       get().updateFrame(updatedElement as FrameData);
     }
+  },
+  // Export handling
+  getExportableFrames: () => {
+    return get().frames.map((frame) => ({
+      ID: frame.ID,
+      name: frame.name,
+      selectedForExport: frame.selectedForExport,
+    }));
+  },
+  toggleExport: (ID) => {
+    const frame = get().getFrame(ID);
+    if (!frame) return;
+    const updatedFrame = {
+      ...frame,
+      selectedForExport: !frame.selectedForExport,
+    };
+    get().updateFrame(updatedFrame, false);
   },
 }));
 
