@@ -152,7 +152,7 @@ function ExportDialog({
     const stage = Konva.stages[0]?.clone();
     if (!stage) return;
     stage.scale({ x: 1, y: 1 });
-    const exportFrameGroup = stage.findOne(`#export${ID}`) as Konva.Group;
+    const exportFrameGroup = stage.findOne(`#export${ID}`);
     if (!exportFrameGroup) {
       stage.destroy();
       return;
