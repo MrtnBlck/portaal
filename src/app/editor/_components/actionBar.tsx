@@ -143,13 +143,24 @@ function ExportDialog({
   const toggleExport = useFrameStore((state) => state.toggleExport);
   const frames = getExportableFrames();
 
-  const handleDownload = (ID: string, name: string) => {
+  const handleDownload = (
+    ID: string,
+    name: string,
+    width: number,
+    height: number,
+  ) => {
     const stage = Konva.stages[0]?.clone();
     if (!stage) return;
     stage.scale({ x: 1, y: 1 });
-    const frame = stage.findOne(`#export${ID}`);
-    if (!frame) return;
-    const uri = frame.toDataURL();
+    const exportFrameGroup = stage.findOne(`#export${ID}`) as Konva.Group;
+    if (!exportFrameGroup) {
+      stage.destroy();
+      return;
+    }
+    const uri = exportFrameGroup.toDataURL({
+      width: width,
+      height: height,
+    });
     stage.destroy();
     downloadURI(uri, `${name}.png`);
   };
@@ -157,7 +168,7 @@ function ExportDialog({
   const exportSelectedFrames = () => {
     frames.forEach((frame) => {
       if (frame.selectedForExport) {
-        handleDownload(frame.ID, frame.name);
+        handleDownload(frame.ID, frame.name, frame.width, frame.height);
       }
     });
   };

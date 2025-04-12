@@ -73,6 +73,8 @@ type FrameStore = {
   getExportableFrames: () => {
     ID: string;
     name: string;
+    width: number;
+    height: number;
     selectedForExport: boolean;
   }[];
   toggleExport: (ID: string) => void;
@@ -420,6 +422,8 @@ export const useFrameStore = create<FrameStore>((set, get) => ({
     return get().frames.map((frame) => ({
       ID: frame.ID,
       name: frame.name,
+      width: frame.width,
+      height: frame.height,
       selectedForExport: frame.selectedForExport,
     }));
   },
