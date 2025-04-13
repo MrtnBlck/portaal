@@ -18,6 +18,7 @@ export function PlaceholderInput({
 }: placeholderInputProps) {
   const [inputValue, setInputValue] = useState(value);
   const setSelectedObject = useEditorStore((state) => state.setSelectedObject);
+
   useEffect(() => {
     if (!value) return;
     setInputValue(value.toString());
@@ -38,7 +39,7 @@ export function PlaceholderInput({
   };
 
   return (
-    <div className="group flex w-full items-center rounded-md border border-neutral-700/50 bg-white/5 px-2.5 text-xs focus:">
+    <div className="focus: group flex w-full items-center rounded-md border border-neutral-700/50 bg-white/5 px-2.5 text-xs">
       <Input
         className="h-7 w-full rounded-none border-none pl-0 !text-xs focus-visible:ring-0"
         value={inputValue}

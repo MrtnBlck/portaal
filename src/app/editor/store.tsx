@@ -220,7 +220,9 @@ export const useLinkStore = create<LinkStore>((set, get) => ({
       .getElement(link.frameID, link.ID);
     if (!linkedElement || linkedElement.type !== "Text") return;
     const updatedLinkedElement = { ...linkedElement, textValue: textValue };
-    useFrameStore.getState().updateElement(link.frameID, updatedLinkedElement);
+    useFrameStore
+      .getState()
+      .updateElement(link.frameID, updatedLinkedElement, false);
   },
   compareLinks: (fLink, sLink) => {
     return (

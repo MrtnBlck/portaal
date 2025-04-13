@@ -1,8 +1,13 @@
-import { useEditorStore, useFrameStore } from "../store";
+import { useEditorStore, useFrameStore, useLinkStore } from "../store";
 import "overlayscrollbars/overlayscrollbars.css";
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 import "./customScroll.css";
-import type { FrameData, FrameElementData } from "../_utils/editorTypes";
+import type {
+  FrameData,
+  FrameElementData,
+  TextData,
+} from "../_utils/editorTypes";
+import { cn } from "~/lib/utils";
 
 export function LayersPanel() {
   let displayedFrame;
@@ -11,6 +16,7 @@ export function LayersPanel() {
   const getFrame = useFrameStore((state) => state.getFrame);
   const userMode = useEditorStore((state) => state.userMode);
   const getRoleElements = useFrameStore((state) => state.getRoleElements);
+  const getRelatedElements = useLinkStore((state) => state.getRelatedElements);
 
   if (userMode === "designer") {
     if (!selectedObject) {
@@ -65,6 +71,13 @@ export function LayersPanel() {
   }
 
   const elements = getRoleElements("parent");
+  if (elements.length === 0) return null;
+
+  let sElement = selectedObject as TextData;
+  if (sElement && sElement.linkRole === "child") {
+    sElement = getRelatedElements(sElement.ID, "child") as TextData;
+  }
+
   return (
     <div className="sidepanel flex flex-col overflow-hidden">
       <div className="px-4 pb-2 pt-4 text-xs font-semibold">Elements</div>
@@ -75,11 +88,12 @@ export function LayersPanel() {
           {elements.map((element) => (
             <div
               key={element.ID}
-              className={
-                element.ID === (selectedObject as FrameElementData).ID
-                  ? "overflow-hidden overflow-ellipsis whitespace-nowrap rounded-md bg-white/5 px-2.5 py-1.5 text-xs text-white"
-                  : "overflow-hidden overflow-ellipsis whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs text-neutral-400 hover:bg-white hover:bg-opacity-5"
-              }
+              className={cn(
+                "overflow-hidden overflow-ellipsis whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs text-neutral-400 hover:bg-white/5",
+                sElement &&
+                  sElement.ID === element.ID &&
+                  "bg-white/5 text-white",
+              )}
               onClick={() => setSelectedObject(element)}
             >
               <span className="pr-2 font-bold">{element.type[0]}</span>

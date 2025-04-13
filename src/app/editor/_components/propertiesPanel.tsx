@@ -1,5 +1,5 @@
 import { PropertiesInput } from "./propertiesInput";
-import { useFrameStore, useEditorStore } from "../store";
+import { useFrameStore, useEditorStore, useLinkStore } from "../store";
 import { PlaceholderInput } from "./placeholderInput";
 import "overlayscrollbars/overlayscrollbars.css";
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
@@ -10,6 +10,7 @@ import type {
   FrameElementData,
   TextData,
 } from "../_utils/editorTypes";
+import { cn } from "~/lib/utils";
 
 export function PropertiesPanel() {
   const selectedObject = useEditorStore((state) => state.selectedObject) as
@@ -21,6 +22,7 @@ export function PropertiesPanel() {
   const userMode = useEditorStore((state) => state.userMode);
   const getRoleElements = useFrameStore((state) => state.getRoleElements);
   const updateTextValue = useFrameStore((state) => state.updateTextValue);
+  const getRelatedElements = useLinkStore((state) => state.getRelatedElements);
 
   if (userMode === "designer") {
     if (!selectedObject) {
@@ -138,8 +140,16 @@ export function PropertiesPanel() {
     );
   }
 
-  const sElement = selectedObject as FrameElementData;
+  const elements = getRoleElements("parent");
+  if (elements.length === 0) return null;
+
+  let sElement = selectedObject as TextData;
+  if (sElement && sElement.linkRole === "child") {
+    sElement = getRelatedElements(sElement.ID, "child") as TextData;
+  }
+
   const setValue = (value: string) => {
+    if (!sElement) return;
     updateTextValue(sElement.frameID, sElement.ID, value);
   };
 
@@ -150,17 +160,16 @@ export function PropertiesPanel() {
         options={{ scrollbars: { theme: "os-theme-light", autoHide: "leave" } }}
       >
         <div className="flex-1 space-y-2 pb-2">
-          {getRoleElements("parent").map((element) => (
+          {elements.map((element) => (
             <div key={element.ID} className="pb-0.5">
               <div className="px-3 pb-1 text-xs font-medium text-neutral-400">
                 {element.name}
               </div>
               <div
-                className={
-                  sElement.ID === element.ID
-                    ? "px-2.5"
-                    : "px-2.5 text-neutral-400"
-                }
+                className={cn(
+                  "px-2.5 text-neutral-400",
+                  sElement && sElement.ID === element.ID && "text-white",
+                )}
               >
                 <PlaceholderInput
                   setValue={(value) => {
