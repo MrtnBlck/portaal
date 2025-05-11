@@ -2,7 +2,7 @@
 
 ## What is Portaal?
 
-Portaal is a platform that aims to ease the process of graphic design for professionals and amateurs alike. It provides the necessary tools to create design templates, using which other users can create their own, customized designs without needing to have any prior knowledge of graphic design.
+Portaal is a platform that aims to ease the process of graphic design for professionals and amateurs alike. It provides the necessary tools to create design templates, allowing other users to create their own, customized designs without needing any prior graphic design knowledge.
 
 ## Table of contents
 
@@ -17,8 +17,6 @@ Visit [portaal-chi.vercel.app](https://portaal-chi.vercel.app/) to see the appli
 
 ## Usage
 
-### For average users
-
 **1. Sign in and create a new project.**\
 **2. Choose a template.**
 
@@ -32,7 +30,7 @@ Visit [portaal-chi.vercel.app](https://portaal-chi.vercel.app/) to see the appli
 ![normal mode](./Readme%20pictures/normal.png)
 
 > [!NOTE]
-> Portaal's "linked elements" feature enables synchronization of elements across multiple instances, allowing simultaneous updates to various design formats. Currently, this feature supports text elements only.
+> Portaal's "linked elements" feature enables synchronization of elements across multiple instances, allowing simultaneous updates across various design formats. Currently, this feature supports text elements only.
 
 **4. Export and enjoy!**
 
@@ -41,7 +39,7 @@ Visit [portaal-chi.vercel.app](https://portaal-chi.vercel.app/) to see the appli
 **1. Sign in and create a new project or a new template.**
 
 > [!TIP]
-> You can make a template from an existing project, if the selected template for the project is editable.
+> You can create a template from an existing project if the original template is editable.
 
 **2. Make something awesome!**
 
@@ -52,7 +50,7 @@ Visit [portaal-chi.vercel.app](https://portaal-chi.vercel.app/) to see the appli
 
 **3. Set up linked elements.**
 
-In the properties panel there is an option to link different elements together, which will make their values synchronize. The parent elements will appear in the linked elements panel for the template users.
+In the properties panel, you'll find an option to link different elements together, which will synchronize their values. The parent elements will appear in the linked elements panel for the template users.
 
 ![linked elements](./Readme%20pictures/linkedElements.png)
 
@@ -109,7 +107,7 @@ To get the necessary keys visit the following websites:
 
 ## Planned features
 
-Portaal is still in development, therefore it's features are quite limited.
+Portaal is still in development, therefore its features are quite limited.
 
 ### Editor
 
