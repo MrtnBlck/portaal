@@ -1,0 +1,243 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 10% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%
+  }
+}
+
+@layer components {
+  .sidepanel {
+    @apply rounded-lg border border-neutral-800 !bg-[#1F1F1FEB] px-0.5 pb-2.5 text-white shadow-[0px_0px_5px_4px_rgba(0,_0,_0,_0.05)] !backdrop-blur-lg pointer-events-auto;
+  }
+
+  .group:focus-within {
+    @apply outline-none ring-neutral-500 ring-1;
+  }
+
+  .scrollArea:hover {
+    @apply overflow-y-auto
+  }
+
+  .scrollArea {
+    @apply overflow-y-hidden;
+  }
+
+  .customButton {
+    @apply border border-transparent bg-white/5 text-neutral-400 hover:border-neutral-600/50 hover:bg-white/10 hover:text-white;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .customPopup {
+    @apply rounded-lg border border-neutral-800 !bg-[#1F1F1FEB]/90 shadow-[0px_0px_5px_4px_rgba(0,_0,_0_0.05)] backdrop-blur-lg !text-white;
+  }
+
+  .customPopup .react-colorful {
+    @apply size-fit;
+  }
+
+  .customPopup .react-colorful__saturation-pointer, .customPopup .react-colorful__hue-pointer, .customPopup .react-colorful__alpha-pointer {
+    @apply size-3.5;
+    border-width: 3px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .6);
+  }
+
+  .customPopup .react-colorful__saturation {
+    @apply rounded size-52 border-none;
+  }
+
+  .customPopup .react-colorful__saturation .react-colorful__interactive {
+    @apply m-1;
+  }
+  
+  .customPopup .react-colorful__hue, .customPopup .react-colorful__alpha {
+    @apply rounded-lg h-3.5 mt-3 mx-0.5;
+  }
+  
+  .customPopup .react-colorful__hue .react-colorful__interactive, .customPopup .react-colorful__alpha .react-colorful__interactive {
+    @apply mx-1;
+  } 
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
+  /* Landing page classes */
+  .wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    filter: blur(150px);
+  }
+
+  .gradient {
+    position: absolute;
+    border-radius: 100%;
+    opacity: 0.6;
+    mix-blend-mode: screen;
+    animation-iteration-count: infinite;
+    animation-timing-function: cubic-bezier(0.1, 0, 0.9, 1);
+  }
+
+  .gradient-1 {
+  background: rgb(7, 215, 242) none repeat scroll 0% 0% / auto padding-box border-box;
+  width: 400px;
+  height: 400px;
+  animation-duration: 11s;
+  opacity: 0.65;
+  left: 60%;
+  top: 30%;
+  z-index: -2;
+  animation-name: animation-gradient-1;
+  }
+  .gradient-2 {
+  background: rgb(238, 0, 255) none repeat scroll 0% 0% / auto padding-box border-box;
+  width: 400px;
+  height: 400px;
+  animation-duration: 11s;
+  opacity: 0.78;
+  left: 40%;
+  top: 30%;
+  z-index: -1;
+  animation-name: animation-gradient-2;
+  }
+  .gradient-3 {
+  background: rgb(255, 200, 0) none repeat scroll 0% 0% / auto padding-box border-box;
+  width: 400px;
+  height: 400px;
+  animation-duration: 11s;
+  opacity: 0.62;
+  left: 50%;
+  top: 40%;
+  z-index: -3;
+  animation-name: animation-gradient-3;
+  }
+
+  @keyframes animation-gradient-1 {
+    0% {
+      transform: translateY(-50%) translateX(-50%) rotate(-20deg) translateX(20%);
+    }
+    25% {
+      transform: translateY(-50%) translateX(-50%) skew(-15deg, -15deg)
+        rotate(80deg) translateX(30%);
+    }
+    50% {
+      transform: translateY(-50%) translateX(-50%) rotate(180deg) translateX(25%);
+    }
+    75% {
+      transform: translateY(-50%) translateX(-50%) skew(15deg, 15deg)
+        rotate(240deg) translateX(15%);
+    }
+    100% {
+      transform: translateY(-50%) translateX(-50%) rotate(340deg) translateX(20%);
+    }
+  }
+  
+  @keyframes animation-gradient-2 {
+    0% {
+      transform: translateY(-50%) translateX(-50%) rotate(40deg) translateX(-20%);
+    }
+    25% {
+      transform: translateY(-50%) translateX(-50%) skew(15deg, 15deg)
+        rotate(110deg) translateX(-5%);
+    }
+    50% {
+      transform: translateY(-50%) translateX(-50%) rotate(210deg) translateX(-35%);
+    }
+    75% {
+      transform: translateY(-50%) translateX(-50%) skew(-15deg, -15deg)
+        rotate(300deg) translateX(-10%);
+    }
+    100% {
+      transform: translateY(-50%) translateX(-50%) rotate(400deg) translateX(-20%);
+    }
+  }
+  
+  @keyframes animation-gradient-3 {
+    0% {
+      transform: translateY(-50%) translateX(-50%) translateX(-15%)
+        translateY(10%);
+    }
+    20% {
+      transform: translateY(-50%) translateX(-50%) translateX(20%)
+        translateY(-30%);
+    }
+    40% {
+      transform: translateY(-50%) translateX(-50%) translateX(-25%)
+        translateY(-15%);
+    }
+    60% {
+      transform: translateY(-50%) translateX(-50%) translateX(30%) translateY(20%);
+    }
+    80% {
+      transform: translateY(-50%) translateX(-50%) translateX(5%) translateY(35%);
+    }
+    100% {
+      transform: translateY(-50%) translateX(-50%) translateX(-15%)
+        translateY(10%);
+    }
+  }
+}
