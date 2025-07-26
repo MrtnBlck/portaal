@@ -35,7 +35,7 @@ function FrameRect({
   const updateFrame = useFrameStore((state) => state.updateFrame);
   const toggleTextEditing = useFrameStore((state) => state.toggleTextEditing);
   const [frameXY, setFrameXY] = useState({ x: frame.x, y: frame.y });
-  const isSelected = selectedObject?.ID === frame.ID;
+  const isSelected = selectedObject?.id === frame.id;
   const { R, G, B } = frame.fill;
   const userMode = useEditorStore((state) => state.userMode);
 
@@ -56,9 +56,9 @@ function FrameRect({
 
   return (
     <>
-      <Group id={`export${frame.ID}`}>
+      <Group id={`export${frame.id}`}>
         <Rect
-          id={frame.ID}
+          id={frame.id}
           x={frame.x}
           y={frame.y}
           width={frame.width}
@@ -71,8 +71,8 @@ function FrameRect({
               (selectedObject as TextData).textValue !== ""
             ) {
               toggleTextEditing(
-                (selectedObject as TextData)?.frameID,
-                selectedObject.ID,
+                (selectedObject as TextData)?.frameId,
+                selectedObject.id,
                 false,
               );
               return;
@@ -86,8 +86,8 @@ function FrameRect({
               (selectedObject as TextData).textValue !== ""
             ) {
               toggleTextEditing(
-                (selectedObject as TextData)?.frameID,
-                selectedObject.ID,
+                (selectedObject as TextData)?.frameId,
+                selectedObject.id,
                 false,
               );
               return;
@@ -132,7 +132,7 @@ function FrameRect({
         <Group
           clipFunc={
             isSelected ||
-            (selectedObject as FrameElementData)?.frameID === frame.ID
+            (selectedObject as FrameElementData)?.frameId === frame.id
               ? undefined
               : (ctx) => {
                   ctx.rect(frame.x, frame.y, frame.width, frame.height);
@@ -142,14 +142,14 @@ function FrameRect({
           {frame.elements?.map((element) => {
             if (isTransforming) {
               return (
-                <Element element={element} frameXY={frameXY} key={element.ID} />
+                <Element element={element} frameXY={frameXY} key={element.id} />
               );
             }
             return (
               <Element
                 element={element}
                 frameXY={{ x: frame.x, y: frame.y }}
-                key={element.ID}
+                key={element.id}
               />
             );
           })}
@@ -175,9 +175,9 @@ function FrameRect({
   );
 }
 
-export function Frame({ ID }: { ID: string }) {
+export function Frame({ id }: { id: string }) {
   const getFrame = useFrameStore((state) => state.getFrame);
-  const frame = getFrame(ID);
+  const frame = getFrame(id);
   const stageScale = useEditorStore((state) => state.stageScale);
   const updateFrame = useFrameStore((state) => state.updateFrame);
   const draggable = useEditorStore((state) => state.tool.type === "move");
@@ -230,7 +230,7 @@ export function Frame({ ID }: { ID: string }) {
         />
         <Text
           text={frame.name}
-          fill={selectedObject?.ID === frame.ID ? "#70AFDC" : "#979797"}
+          fill={selectedObject?.id === frame.id ? "#70AFDC" : "#979797"}
           x={frame.x}
           y={frame.y + -20 * inverseScale}
           scale={{ x: inverseScale, y: inverseScale }}

@@ -23,14 +23,5 @@ export default function EditorPage({
       </div>
     );
 
-  return (
-    <Editor
-      data={project.data}
-      id={projectId}
-      name={project.name}
-      type="project"
-      isEditable={project.isTemplateEditable}
-      isTemplateOwner={project.ownerId === project.templateOwnerId}
-    />
-  );
+  return <Editor type="project" project={project} />;
 }

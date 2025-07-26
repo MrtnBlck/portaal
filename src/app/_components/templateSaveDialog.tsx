@@ -49,7 +49,7 @@ export function TemplateSaveDialog(props: {
       })
       .then((res) => {
         if (!res.ok) {
-          throw new Error("Template ID is required");
+          throw new Error("Error while creating project");
         }
         return res.json();
       });
@@ -67,7 +67,7 @@ export function TemplateSaveDialog(props: {
       })
       .then((res) => {
         if (!res.ok) {
-          throw new Error("Template ID is required");
+          throw new Error("Template id is required");
         }
         return res.json();
       });

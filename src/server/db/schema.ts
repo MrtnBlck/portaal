@@ -67,6 +67,20 @@ export const templates = createTable(
   (t) => [index("templateName_idx").on(t.name)],
 );
 
+export const sharedProjects = createTable("shared_project", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  projectId: integer("project_id")
+    .notNull()
+    .references(() => projects.id, { onDelete: "cascade" }),
+  userId: varchar("user_id", { length: 256 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+    () => new Date(),
+  ),
+});
+
 export const filters = createTable("filter", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   categoryId: integer("category_id")
@@ -111,17 +125,3 @@ export const filterCategoriesRelations = relations(
     filters: many(filters),
   }),
 );
-
-export const messages = createTable("message", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  projectId: integer("project_id")
-    .notNull()
-    .references(() => projects.id),
-  receiverId: varchar("receiver_id", { length: 256 }).notNull(),
-  senderId: varchar("sender_id", { length: 256 }).notNull(),
-  text: text("text").notNull(),
-  isRead: boolean("is_read").notNull().default(false),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-});

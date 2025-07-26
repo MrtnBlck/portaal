@@ -66,7 +66,7 @@ function ProperyList({
       updateFrame({ ...sFrame, [property]: value });
     } else {
       const sElement = selectedObject as FrameElementData;
-      updateElement(sElement.frameID, {
+      updateElement(sElement.frameId, {
         ...sElement,
         [property]: value,
       });
@@ -128,21 +128,21 @@ function ProperyList({
           </div>
           <div className="flex gap-1.5 px-2.5">
             <ColorInput
-              ID={selectedObject.ID}
-              frameID={
+              id={selectedObject.id}
+              frameId={
                 selectedObject.type === "Frame"
                   ? undefined
-                  : (selectedObject as FrameElementData).frameID
+                  : (selectedObject as FrameElementData).frameId
               }
               fillOpacity={selectedObject.fillOpacity}
               fill={selectedObject.fill}
             />
             <ColorOpacityInput
-              ID={selectedObject.ID}
-              frameID={
+              id={selectedObject.id}
+              frameId={
                 selectedObject.type === "Frame"
                   ? undefined
-                  : (selectedObject as FrameElementData).frameID
+                  : (selectedObject as FrameElementData).frameId
               }
               fillOpacity={selectedObject.fillOpacity}
             />
@@ -176,25 +176,25 @@ function LinkedElementInputs({
 
   let sElement = selectedObject as TextData;
   if (sElement && sElement.linkRole === "child") {
-    sElement = getRelatedElements(sElement.ID, "child") as TextData;
+    sElement = getRelatedElements(sElement.id, "child") as TextData;
   }
 
   const setValue = (value: string) => {
     if (!sElement) return;
-    updateTextValue(sElement.frameID, sElement.ID, value);
+    updateTextValue(sElement.frameId, sElement.id, value);
   };
 
   return (
     <div className="flex-1 space-y-2 pb-2">
       {elements.map((element) => (
-        <div key={element.ID} className="pb-0.5">
+        <div key={element.id} className="pb-0.5">
           <div className="px-3 pb-1 text-xs font-medium text-neutral-400">
             {element.name}
           </div>
           <div
             className={cn(
               "px-2.5 text-neutral-400",
-              sElement && sElement.ID === element.ID && "text-white",
+              sElement && sElement.id === element.id && "text-white",
             )}
           >
             <PlaceholderInput

@@ -26,8 +26,11 @@ export default function EditorPage({
   const { filterIds } = template.filterIds;
   const filters = filterIds as number[];
 
-  return (
-    <Editor
+  return <Editor type="template" project={template} filterIds={filters} />;
+}
+
+{
+  /* <Editor
       data={template.data}
       id={templateId}
       name={template.name}
@@ -35,6 +38,5 @@ export default function EditorPage({
       isEditable={true}
       isTemplateOwner={true}
       filterIds={filters}
-    />
-  );
+    /> */
 }

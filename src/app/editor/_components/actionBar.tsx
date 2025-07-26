@@ -3,13 +3,14 @@
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 
+import TextareaAutosize from "react-textarea-autosize";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { Save, Download } from "lucide-react";
+import { Save, Download, Send } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useEditorStore } from "../_utils/editorStore";
 import { useLinkStore } from "../_utils/linkStore";
@@ -17,15 +18,13 @@ import { useFrameStore } from "../_utils/frameStore";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
 import { Checkbox } from "~/components/ui/checkbox";
 import Konva from "konva";
 import { cn } from "~/lib/utils";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { client } from "~/server";
-import type { EditorData } from "~/app/editor/_utils/editorTypes";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,44 +32,55 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { TemplateSaveDialog } from "~/app/_components/templateSaveDialog";
+import { useMutationHandlers } from "~/app/_hooks/useMutationHandlers";
+import { api } from "~/convex/_generated/api";
+import { useMutationState } from "~/app/_hooks/useMutationState";
 
-export function ActionBar(props: {
-  id: string;
-  name: string;
-  type: "project" | "template";
-  isPublic?: boolean;
-  isEditable: boolean;
-  filterIds?: number[];
-}) {
+export function ActionBar() {
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isTemplateSaveDialogOpen, setIsTemplateSaveDialogOpen] =
     useState(false);
+  const [isForwardDialogOpen, setIsForwardDialogOpen] = useState(false);
   const [isSaveDropdownOpen, setIsSaveDropdownOpen] = useState(false);
   const [isMouseOverDropdown, setIsMouseOverDropdown] = useState(false);
 
   const links = useLinkStore((state) => state.links);
   const frames = useFrameStore((state) => state.frames);
   const isTemplateOwner = useEditorStore((state) => state.isTemplateOwner);
+  const uploadQueue = useEditorStore((state) => state.uploadQueue);
+  const projectData = useEditorStore((state) => state.projectData);
+  const isEditable = useEditorStore((state) => state.isEditable);
+  const { updateProject, updateTemplate } = useMutationHandlers();
 
-  const queryClient = useQueryClient();
-  const mutFn =
-    props.type === "project"
-      ? (data: EditorData) =>
-          client.api.projects[":id"].$patch({
-            param: { id: props.id },
-            json: { data },
-          })
-      : (data: EditorData) =>
-          client.api.templates[":id"].$patch({
-            param: { id: props.id },
-            json: { data },
-          });
-  const { mutate } = useMutation({
-    mutationFn: mutFn,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["projects"] });
-    },
-  });
+  if (!projectData) {
+    return null;
+  }
+
+  const {
+    type: projectType,
+    id: projectId,
+    name: projectName,
+    filterIds,
+    templateOwnerId,
+  } = projectData;
+
+  const handleSave = () => {
+    if (uploadQueue.length > 0) {
+      return;
+    }
+    if (projectType === "project") {
+      updateProject({
+        projectId: String(projectId),
+        data: { frames, links },
+      });
+    }
+    if (projectType === "template") {
+      updateTemplate({
+        templateId: String(projectId),
+        data: { frames, links },
+      });
+    }
+  };
 
   return (
     <div className="sidepanel flex items-center justify-between !p-1.5 !px-2">
@@ -98,24 +108,23 @@ export function ActionBar(props: {
             onOpenChange={setIsSaveDropdownOpen}
             modal={false}
           >
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild disabled={uploadQueue.length > 0}>
               <Button
                 size="icon"
                 className="h-8 w-8 !rounded-sm bg-[#528FBB] text-white hover:bg-[#5c9dcc] focus-visible:ring-0"
-                onClick={() => {
-                  mutate({ frames, links });
-                }}
+                onClick={() => handleSave()}
                 onMouseEnter={() => setIsSaveDropdownOpen(true)}
                 onMouseLeave={() => {
                   if (!isMouseOverDropdown) {
                     setIsSaveDropdownOpen(false);
                   }
                 }}
+                disabled={uploadQueue.length > 0}
               >
                 <Save />
               </Button>
             </DropdownMenuTrigger>
-            {(props.isEditable || isTemplateOwner) && (
+            {(isEditable || isTemplateOwner) && (
               <DropdownMenuContent
                 className="customPopup min-w-20"
                 onMouseEnter={() => setIsMouseOverDropdown(true)}
@@ -126,9 +135,7 @@ export function ActionBar(props: {
               >
                 <DropdownMenuItem
                   className="text-xs hover:!bg-white/5"
-                  onClick={() => {
-                    mutate({ frames, links });
-                  }}
+                  onClick={() => handleSave()}
                 >
                   Save
                 </DropdownMenuItem>
@@ -136,27 +143,29 @@ export function ActionBar(props: {
                   className="text-xs hover:!bg-white/5"
                   onClick={() => setIsTemplateSaveDialogOpen(true)}
                 >
-                  {props.type === "project" ? "Save as template" : "Options"}
+                  {projectType === "project" ? "Save as template" : "Options"}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             )}
           </DropdownMenu>
-          {/* <Tooltip>
-            <TooltipTrigger asChild>
-              <span>
-                <Button
-                  size="icon"
-                  className="h-8 w-8 !rounded-sm bg-[#52BB86] text-white focus-visible:ring-0"
-                  disabled
-                >
-                  <Send />
-                </Button>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Forward</p>
-            </TooltipContent>
-          </Tooltip> */}
+          {!isTemplateOwner && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Button
+                    size="icon"
+                    className="h-8 w-8 !rounded-sm bg-[#52BB86] text-white hover:bg-[#6BDBA0] focus-visible:ring-0"
+                    onClick={() => setIsForwardDialogOpen(true)}
+                  >
+                    <Send />
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Forward</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </TooltipProvider>
         <ExportDialog
           isDialogOpen={isExportDialogOpen}
@@ -165,14 +174,21 @@ export function ActionBar(props: {
         <TemplateSaveDialog
           isDialogOpen={isTemplateSaveDialogOpen}
           setIsDialogOpen={setIsTemplateSaveDialogOpen}
-          name={props.name}
+          name={projectName}
           data={{ frames, links }}
-          method={props.type === "project" ? "post" : "patch"}
-          id={props.id}
-          saveProject={() => mutate({ frames, links })}
-          isEditable={props.isEditable}
-          isPublic={props.isPublic}
-          filterIds={props.filterIds}
+          method={projectType === "project" ? "post" : "patch"}
+          id={String(projectId)}
+          saveProject={() => handleSave()}
+          isEditable={isEditable}
+          filterIds={filterIds}
+        />
+        <ForwardDialog
+          isDialogOpen={isForwardDialogOpen}
+          setIsDialogOpen={setIsForwardDialogOpen}
+          projectId={projectId}
+          templateOwnerId={templateOwnerId}
+          isTemplateOwner={isTemplateOwner}
+          projectName={projectName}
         />
       </div>
     </div>
@@ -238,7 +254,7 @@ function ExportDialog(props: {
   const frames = getExportableFrames();
 
   const handleDownload = (
-    ID: string,
+    id: string,
     name: string,
     width: number,
     height: number,
@@ -246,7 +262,7 @@ function ExportDialog(props: {
     const stage = Konva.stages[0]?.clone();
     if (!stage) return;
     stage.scale({ x: 1, y: 1 });
-    const exportFrameGroup = stage.findOne(`#export${ID}`);
+    const exportFrameGroup = stage.findOne(`#export${id}`);
     if (!exportFrameGroup) {
       stage.destroy();
       return;
@@ -262,7 +278,7 @@ function ExportDialog(props: {
   const exportSelectedFrames = () => {
     frames.forEach((frame) => {
       if (frame.selectedForExport) {
-        handleDownload(frame.ID, frame.name, frame.width, frame.height);
+        handleDownload(frame.id, frame.name, frame.width, frame.height);
       }
     });
   };
@@ -280,7 +296,7 @@ function ExportDialog(props: {
     const allSelected = !frames.some((frame) => frame.selectedForExport);
     frames.forEach((frame) => {
       if (allSelected ? !frame.selectedForExport : frame.selectedForExport) {
-        toggleExport(frame.ID);
+        toggleExport(frame.id);
       }
     });
   };
@@ -294,17 +310,17 @@ function ExportDialog(props: {
         <div className="flex flex-1 flex-col justify-between space-y-6">
           <div className="flex flex-col gap-4">
             {frames.map((frame) => (
-              <div key={frame.ID} className="flex items-center space-x-2">
+              <div key={frame.id} className="flex items-center space-x-2">
                 <Checkbox
-                  id={frame.ID}
+                  id={frame.id}
                   className="border-neutral-400 data-[state=checked]:border-white"
                   checked={frame.selectedForExport}
                   onCheckedChange={() => {
-                    toggleExport(frame.ID);
+                    toggleExport(frame.id);
                   }}
                 />
                 <label
-                  htmlFor={frame.ID}
+                  htmlFor={frame.id}
                   className={cn(
                     "text-sm leading-none text-neutral-400 peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
                     frame.selectedForExport ? "text-white" : "",
@@ -336,6 +352,94 @@ function ExportDialog(props: {
                 : "Select all"}
             </Button>
           </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ForwardDialog(props: {
+  isDialogOpen: boolean;
+  setIsDialogOpen: (isOpen: boolean) => void;
+  projectId: number;
+  templateOwnerId: string | undefined;
+  isTemplateOwner: boolean;
+  projectName: string;
+}) {
+  const {
+    isDialogOpen,
+    setIsDialogOpen,
+    projectId,
+    templateOwnerId,
+    isTemplateOwner,
+    projectName,
+  } = props;
+
+  const [message, setMessage] = useState("");
+  const { mutate: createChannel } = useMutationState(api.channel.shareProject);
+  const { shareProject } = useMutationHandlers();
+
+  if (!templateOwnerId || isTemplateOwner) {
+    return null;
+  }
+
+  const handleForward = () => {
+    if (message.trim() === "") {
+      return;
+    }
+
+    void createChannel({
+      name: projectName,
+      templateOwnerId: templateOwnerId,
+      projectId: projectId,
+      message: message,
+    });
+    void shareProject({
+      projectId: projectId,
+      userId: templateOwnerId,
+    });
+  };
+
+  return (
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <DialogContent className="sidepanel flex min-h-72 select-none flex-col justify-start shadow-none ring-0">
+        <DialogHeader className="h-fit">
+          <DialogTitle className="text-base">
+            Share with template owner
+          </DialogTitle>
+          <DialogDescription className="text-neutral-300">
+            Need help or want to request new features?
+            <br />
+            This will share your project and start a conversation with the
+            template owner.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-1 flex-col justify-between space-y-6">
+          <div>
+            <div className="pb-1 text-sm font-light text-neutral-400">
+              Message
+            </div>
+            <div className="flex min-h-8 flex-col items-center justify-center rounded-md border border-neutral-700/50 bg-white/5 px-3">
+              <TextareaAutosize
+                rows={1}
+                maxRows={4}
+                placeholder="Type a message..."
+                className="textarea-scrollbar my-1.5 w-full resize-none items-center bg-transparent text-sm text-neutral-100 outline-none placeholder:text-neutral-400 focus-visible:ring-neutral-500/90"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              />
+            </div>
+          </div>
+          <Button
+            disabled={message.trim() === ""}
+            onClick={() => {
+              handleForward();
+              setIsDialogOpen(false);
+              setMessage("");
+            }}
+          >
+            Send & Share
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

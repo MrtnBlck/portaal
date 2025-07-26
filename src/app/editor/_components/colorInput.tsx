@@ -17,8 +17,8 @@ import { useFrameStore } from "../_utils/frameStore";
 type ColorInputProps = {
   fill: RGBColor;
   fillOpacity: number;
-  ID: string;
-  frameID?: string;
+  id: string;
+  frameId?: string;
 };
 
 type ColorOpacityInputProps = Omit<ColorInputProps, "fill">;
@@ -26,8 +26,8 @@ type ColorOpacityInputProps = Omit<ColorInputProps, "fill">;
 export function ColorInput({
   fill,
   fillOpacity,
-  ID,
-  frameID,
+  id,
+  frameId,
 }: ColorInputProps) {
   const setFillColor = useFrameStore((state) => state.setFillColor);
   const currentColor = useMemo(() => {
@@ -51,8 +51,8 @@ export function ColorInput({
     if (isValid) {
       const { r, g, b, a } = newColor.toRgb();
       setFillColor({
-        ID: ID,
-        frameID: frameID,
+        id: id,
+        frameId: frameId,
         color: {
           R: r,
           G: g,
@@ -103,8 +103,8 @@ export function ColorInput({
               const newColor = new TinyColor(e);
               const { r, g, b, a } = newColor.toRgb();
               setFillColor({
-                ID: ID,
-                frameID: frameID,
+                id: id,
+                frameId: frameId,
                 color: {
                   R: r,
                   G: g,
@@ -133,8 +133,8 @@ export function ColorInput({
 
 export function ColorOpacityInput({
   fillOpacity,
-  ID,
-  frameID,
+  id,
+  frameId,
 }: ColorOpacityInputProps) {
   const setFillColor = useFrameStore((state) => state.setFillColor);
   const formattedOpacity = `${fillOpacity}%`;
@@ -152,8 +152,8 @@ export function ColorOpacityInput({
     if (value !== "") {
       const newValue = Math.min(Math.max(parseInt(value), 0), 100);
       setFillColor({
-        ID: ID,
-        frameID: frameID,
+        id: id,
+        frameId: frameId,
         opacity: newValue,
       });
       setInputValue(`${newValue}%`);

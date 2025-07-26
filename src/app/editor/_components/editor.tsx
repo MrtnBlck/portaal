@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Stage } from "react-konva";
 import { Frame } from "../_components/frame";
 import { MenuWrapper } from "../_components/menuWrapper";
@@ -11,31 +11,27 @@ import { EventListener } from "../_utils/eventListener";
 import { Spinner } from "~/components/ui/spinner";
 import { useFrameStore } from "../_utils/frameStore";
 import { useLinkStore } from "../_utils/linkStore";
-import type { EditorData } from "../_utils/editorTypes";
+import type { ProjectQueryData } from "../_utils/editorTypes";
+import { FileInputProvider } from "./fileInputHandler";
+import { Toaster } from "~/components/ui/sonner";
 
-interface Editorprops {
-  id: string;
-  name: string;
+export default function Editor(props: {
   type: "project" | "template";
+  project: ProjectQueryData;
   filterIds?: number[];
-  isPublic?: boolean;
-  isEditable: boolean;
-  isTemplateOwner: boolean;
-  data: EditorData;
-}
-
-export default function Editor(props: Editorprops) {
-  const { isTemplateOwner, data, ...rest } = props;
+}) {
+  const { type, project, filterIds } = props;
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   // Frame store
-  const frameIDs = useFrameStore((state) => state.getFrameIDs);
+  const frameIds = useFrameStore((state) => state.getFrameIds);
   const setFrames = useFrameStore((state) => state.setFrames);
 
   // Link store
   const setLinks = useLinkStore((state) => state.setLinks);
 
   // Editor store
+  const setProjectData = useEditorStore((state) => state.setProjectData);
   const tool = useEditorStore((state) => state.tool);
   const stageScale = useEditorStore((state) => state.stageScale);
   const setSelectedObject = useEditorStore((state) => state.setSelectedObject);
@@ -68,25 +64,43 @@ export default function Editor(props: Editorprops) {
     };
   }, []);
 
+  // Run only on project load
+  const initialEditorValuesSet = useRef(false);
   useEffect(() => {
-    const { frames, links } = data;
+    if (initialEditorValuesSet.current) return;
+    const isTemplateOwner =
+      type === "template" ? true : project.ownerId === project.templateOwnerId;
+    const { frames, links } = project.data;
+    setIsEditable(project.isTemplateEditable ?? true);
+    setIsTemplateOwner(isTemplateOwner);
+    setUserMode(isTemplateOwner ? "designer" : "normal");
     setFrames(frames);
     setLinks(links);
     setSelectedObject(null);
-    setUserMode(props.isTemplateOwner ? "designer" : "normal");
-    setIsEditable(props.isEditable);
-    setIsTemplateOwner(isTemplateOwner);
+    initialEditorValuesSet.current = true; // Mark as executed
   }, [
-    setFrames,
-    setLinks,
-    setSelectedObject,
-    setUserMode,
+    project,
+    type,
+    filterIds,
     setIsEditable,
     setIsTemplateOwner,
-    props,
-    data,
-    isTemplateOwner,
+    setProjectData,
+    setUserMode,
+    setSelectedObject,
+    setFrames,
+    setLinks,
   ]);
+
+  // Run on every project update
+  useEffect(() => {
+    setProjectData({
+      id: project.id,
+      name: project.name,
+      type: type,
+      filterIds: filterIds,
+      templateOwnerId: project.templateOwnerId,
+    });
+  }, [project, type, filterIds, setProjectData]);
 
   if (dimensions.width === 0 || dimensions.height === 0) {
     return (
@@ -97,7 +111,7 @@ export default function Editor(props: Editorprops) {
   }
 
   return (
-    <>
+    <FileInputProvider>
       <div className="relative h-full w-full">
         <EventListener />
         <MenuWrapper>
@@ -123,13 +137,18 @@ export default function Editor(props: Editorprops) {
             }}
             scale={{ x: stageScale, y: stageScale }}
           >
-            {frameIDs().map((ID) => {
-              return <Frame ID={ID} key={ID} />;
+            {frameIds().map((id) => {
+              return <Frame id={id} key={id} />;
             })}
           </Stage>
         </MenuWrapper>
       </div>
-      <EditorUI {...rest} />
-    </>
+      <Toaster
+        position="top-center"
+        offset={10}
+        className="!w-full max-w-[364px]"
+      />
+      <EditorUI />
+    </FileInputProvider>
   );
 }

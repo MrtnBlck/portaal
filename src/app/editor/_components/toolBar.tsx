@@ -18,47 +18,32 @@ import {
   Image as ImgIcon,
   SquarePen,
 } from "lucide-react";
-import { useRef } from "react";
+import { useCallback } from "react";
+import { useFileInput } from "./fileInputHandler";
 
 export function ToolBar({ className }: { className: string }) {
   const tool = useEditorStore((state) => state.tool.type);
   const setTool = useEditorStore((state) => state.setTool);
   const addNewImageData = useEditorStore((state) => state.addNewImageData);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const userMode = useEditorStore((state) => state.userMode);
   const toggleUserMode = useEditorStore((state) => state.toggleUserMode);
   const setNewImageFile = useEditorStore((state) => state.setNewImageFile);
   const isTemplateOwner = useEditorStore((state) => state.isTemplateOwner);
   const isEditable = useEditorStore((state) => state.isEditable);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) {
-      return;
-    }
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          addNewImageData({
-            imageURL: img.src,
-            imageWidth: img.width,
-            imageHeight: img.height,
-            imageKey: "",
-          });
-        };
-        img.src = e.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-      setNewImageFile(file);
-    }
-    e.target.value = "";
-  };
+  const imgOnload = useCallback(
+    (img: HTMLImageElement) => {
+      addNewImageData({
+        imageURL: img.src,
+        imageWidth: img.width,
+        imageHeight: img.height,
+        imageKey: "",
+      });
+    },
+    [addNewImageData],
+  );
 
-  const openFileInput = () => {
-    fileInputRef.current?.click();
-  };
+  const openFileInput = useFileInput({ imgOnload, setNewImageFile });
 
   return (
     <div className={className}>
@@ -195,13 +180,6 @@ export function ToolBar({ className }: { className: string }) {
                 </p>
               </TooltipContent>
             </Tooltip>
-            <input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              style={{ display: "none" }}
-              onChange={handleFileChange}
-            />
           </>
         )}
       </TooltipProvider>

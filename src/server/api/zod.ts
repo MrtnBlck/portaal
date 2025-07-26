@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 const FrameElementSchema = z.object({
-  ID: z.string(),
-  frameID: z.string(),
+  id: z.string(),
+  frameId: z.string(),
 });
 
 const ObjectTypeSchema = z.enum([
@@ -52,7 +52,7 @@ const TextDataSchema = FrameElementDataSchema.extend({
 });
 
 const FrameDataSchema = ObjectDataSchema.extend({
-  ID: z.string(),
+  id: z.string(),
   selectedForExport: z.boolean(),
   elements: z
     .union([

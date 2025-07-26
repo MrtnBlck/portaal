@@ -71,7 +71,7 @@ function NewProjectPageButtons() {
   const { mutate } = useMutation({
     mutationFn: () => {
       if (!selectedTemplate || !template) {
-        throw new Error("Template ID is required");
+        throw new Error("Template id is required");
       }
 
       return client.api.projects

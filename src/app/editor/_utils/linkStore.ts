@@ -6,13 +6,13 @@ type LinkStore = {
   links: Link[];
   setLinks: (newLinks: Link[]) => void;
   getRelatedElements: (
-    ID: string,
+    id: string,
     role: string,
   ) => FrameElement[] | FrameElement | null;
-  getSiblingElements: (ID: string) => FrameElement[] | null;
+  getSiblingElements: (id: string) => FrameElement[] | null;
   addLink: (newLink: Link) => void;
   removeLink: (link: Link) => void;
-  removeRelatedLinks: (ID: string) => void;
+  removeRelatedLinks: (id: string) => void;
   updateLinkedText: (link: FrameElement, textValue: string) => void;
   compareLinks: (fLink: Link, sLink: Link) => boolean;
 };
@@ -26,25 +26,25 @@ export const useLinkStore = create<LinkStore>((set, get) => ({
   getChildLinks: () => {
     return get().links.map((link) => link.childElement);
   },
-  getRelatedElements: (ID, role) => {
+  getRelatedElements: (id, role) => {
     if (role === "child") {
       const currentLink = get().links.find(
-        (link) => link.childElement.ID === ID,
+        (link) => link.childElement.id === id,
       );
       if (!currentLink) return null;
       return currentLink.parentElement;
     }
     const links = get()
-      .links.filter((link) => link.parentElement.ID === ID)
+      .links.filter((link) => link.parentElement.id === id)
       .map((link) => link.childElement);
     return links.length > 0 ? links : null;
   },
-  getSiblingElements: (ID) => {
-    const currentLink = get().links.find((link) => link.childElement.ID === ID);
+  getSiblingElements: (id) => {
+    const currentLink = get().links.find((link) => link.childElement.id === id);
     if (!currentLink) return null;
     const siblings = get()
       .links.filter(
-        (link) => link.parentElement.ID === currentLink.parentElement.ID,
+        (link) => link.parentElement.id === currentLink.parentElement.id,
       )
       .map((link) => link.childElement);
     return siblings.length > 0 ? siblings : null;
@@ -62,25 +62,25 @@ export const useLinkStore = create<LinkStore>((set, get) => ({
   updateLinkedText: (link, textValue) => {
     const linkedElement = useFrameStore
       .getState()
-      .getElement(link.frameID, link.ID);
+      .getElement(link.frameId, link.id);
     if (!linkedElement || linkedElement.type !== "Text") return;
     const updatedLinkedElement = { ...linkedElement, textValue: textValue };
     useFrameStore
       .getState()
-      .updateElement(link.frameID, updatedLinkedElement, false);
+      .updateElement(link.frameId, updatedLinkedElement, false);
   },
   compareLinks: (fLink, sLink) => {
     return (
-      fLink.parentElement.frameID === sLink.parentElement.frameID &&
-      fLink.parentElement.ID === sLink.parentElement.ID &&
-      fLink.childElement.frameID === sLink.childElement.frameID &&
-      fLink.childElement.ID === sLink.childElement.ID
+      fLink.parentElement.frameId === sLink.parentElement.frameId &&
+      fLink.parentElement.id === sLink.parentElement.id &&
+      fLink.childElement.frameId === sLink.childElement.frameId &&
+      fLink.childElement.id === sLink.childElement.id
     );
   },
-  removeRelatedLinks: (ID) => {
+  removeRelatedLinks: (id) => {
     set((state) => ({
       links: state.links.filter(
-        (link) => link.parentElement.ID !== ID && link.childElement.ID !== ID,
+        (link) => link.parentElement.id !== id && link.childElement.id !== id,
       ),
     }));
   },

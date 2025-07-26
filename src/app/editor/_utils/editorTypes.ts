@@ -11,8 +11,8 @@ export type Link = {
 };
 
 export type FrameElement = {
-  ID: string;
-  frameID: string;
+  id: string;
+  frameId: string;
 };
 
 export type RGBColor = {
@@ -36,7 +36,7 @@ export type ObjectData = {
 export type FrameElementData = ObjectData & FrameElement;
 
 export type FrameData = ObjectData & {
-  ID: string;
+  id: string;
   selectedForExport: boolean;
   elements: FrameElementData[];
 };
@@ -59,4 +59,21 @@ export type TextData = FrameElementData & {
 export type EditorData = {
   frames: FrameData[];
   links: Link[];
+};
+
+export type ProjectData = {
+  id: number;
+  name: string;
+  type: "project" | "template";
+  filterIds?: number[];
+  templateOwnerId?: string;
+};
+
+export type ProjectQueryData = {
+  data: never;
+  id: number;
+  name: string;
+  ownerId: string;
+  templateOwnerId?: string;
+  isTemplateEditable?: boolean;
 };

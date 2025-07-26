@@ -2,7 +2,7 @@ import "server-only";
 import { Hono } from "hono";
 import { clerkMiddleware } from "@hono/clerk-auth";
 import { db } from "../db";
-import { projects, templates } from "../db/schema";
+import { projects, sharedProjects, templates } from "../db/schema";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { authGuard } from "./auth-guard";
@@ -156,6 +156,64 @@ export const app = new Hono()
       await db.delete(projects).where(eq(projects.id, id));
 
       return c.json({ success: true });
+    },
+  )
+  //shared projects
+  .post(
+    "/sharedProjects",
+    zValidator(
+      "json",
+      z.object({
+        projectId: z.number().int(),
+        userId: z.string(),
+      }),
+    ),
+    authGuard(),
+    async (c) => {
+      const user = c.var.user;
+      const json = c.req.valid("json");
+
+      const project = await db.query.projects.findFirst({
+        columns: {
+          id: true,
+          ownerId: true,
+        },
+        where: (project, { eq }) => eq(project.id, json.projectId),
+      });
+
+      if (!project) {
+        throw new HTTPException(404);
+      }
+
+      if (project.ownerId !== user.userId) {
+        throw new HTTPException(403);
+      }
+
+      const existingShare = await db.query.sharedProjects.findFirst({
+        where: (sharedProject, { and, eq }) =>
+          and(
+            eq(sharedProject.projectId, json.projectId),
+            eq(sharedProject.userId, json.userId),
+          ),
+      });
+
+      if (existingShare) {
+        return c.json({ error: "Project already shared with this user" }, 400);
+      }
+
+      const [insertedSharedProject] = await db
+        .insert(sharedProjects)
+        .values({
+          projectId: json.projectId,
+          userId: json.userId,
+        })
+        .returning({ id: sharedProjects.id });
+
+      if (!insertedSharedProject) {
+        return c.json({ error: "Failed to share project" }, 500);
+      }
+
+      return c.json({ id: insertedSharedProject.id }, 201);
     },
   )
   //templates

@@ -95,8 +95,8 @@ describe("API tests", () => {
     });
   });
 
-  describe("Get project by ID", () => {
-    test("Throws 400 if ID is not a number", async () => {
+  describe("Get project by id", () => {
+    test("Throws 400 if id is not a number", async () => {
       const result = await testApp.api.projects[":id"].$get({
         param: { id: "invalid-id" },
       });
@@ -138,7 +138,7 @@ describe("API tests", () => {
       expect(result.status).toBe(403);
     });
 
-    test("Fetches project by ID", async () => {
+    test("Fetches project by id", async () => {
       const [template] = await db
         .insert(schema.templates)
         .values({ ownerId: MOCK_USER_ID, isEditable: true, isPublic: false })
@@ -203,7 +203,7 @@ describe("API tests", () => {
       expect(data).toEqual({ id: expect.any(Number) });
 
       if (!("id" in data)) {
-        expect.fail("ID not found in response");
+        expect.fail("id not found in response");
       }
 
       await expect(
@@ -215,7 +215,7 @@ describe("API tests", () => {
   });
 
   describe("Update project", () => {
-    test("Throws 400 if ID is not a number", async () => {
+    test("Throws 400 if id is not a number", async () => {
       const result = await testApp.api.projects[":id"].$patch({
         param: { id: "invalid-id" },
         json: {},
@@ -298,7 +298,7 @@ describe("API tests", () => {
       const body = await result.json();
 
       if (!("id" in body)) {
-        expect.fail("ID not found in response");
+        expect.fail("id not found in response");
       }
 
       expect(body).toEqual({ id: project?.id });
@@ -312,7 +312,7 @@ describe("API tests", () => {
   });
 
   describe("Delete project", () => {
-    test("Throws 400 if ID is not a number", async () => {
+    test("Throws 400 if id is not a number", async () => {
       const result = await testApp.api.projects[":id"].$delete({
         param: { id: "invalid-id" },
       });
@@ -477,8 +477,8 @@ describe("API tests", () => {
     });
   });
 
-  describe("Get public template by ID", () => {
-    test("Throws 400 if ID is not a number", async () => {
+  describe("Get public template by id", () => {
+    test("Throws 400 if id is not a number", async () => {
       const result = await testApp.api.publicTemplate[":id"].$get({
         param: { id: "invalid-id" },
       });
@@ -511,7 +511,7 @@ describe("API tests", () => {
       expect(result.status).toBe(403);
     });
 
-    test("Fetches public template by ID", async () => {
+    test("Fetches public template by id", async () => {
       const [template] = await db
         .insert(schema.templates)
         .values({
@@ -541,8 +541,8 @@ describe("API tests", () => {
     });
   });
 
-  describe("Get template by ID", () => {
-    test("Throws 400 if ID is not a number", async () => {
+  describe("Get template by id", () => {
+    test("Throws 400 if id is not a number", async () => {
       const result = await testApp.api.templates[":id"].$get({
         param: { id: "invalid-id" },
       });
@@ -556,7 +556,7 @@ describe("API tests", () => {
       expect(result.status).toBe(404);
     });
 
-    test("Fetches template by ID", async () => {
+    test("Fetches template by id", async () => {
       const [template] = await db
         .insert(schema.templates)
         .values({
@@ -610,7 +610,7 @@ describe("API tests", () => {
       expect(data).toEqual({ id: expect.any(Number) });
 
       if (!("id" in data)) {
-        expect.fail("ID not found in response");
+        expect.fail("id not found in response");
       }
 
       await expect(
@@ -622,7 +622,7 @@ describe("API tests", () => {
   });
 
   describe("Update template", () => {
-    test("Throws 400 if ID is not a number", async () => {
+    test("Throws 400 if id is not a number", async () => {
       const result = await testApp.api.templates[":id"].$patch({
         param: { id: "invalid-id" },
         json: {},
@@ -650,7 +650,7 @@ describe("API tests", () => {
       expect(result.status).toBe(404);
     });
 
-    test("Fetches template by ID", async () => {
+    test("Fetches template by id", async () => {
       const [template] = await db
         .insert(schema.templates)
         .values({
@@ -671,7 +671,7 @@ describe("API tests", () => {
       const body = await result.json();
 
       if (!("id" in body)) {
-        expect.fail("ID not found in response");
+        expect.fail("id not found in response");
       }
 
       expect(body).toEqual({ id: template?.id });
@@ -685,7 +685,7 @@ describe("API tests", () => {
   });
 
   describe("Delete template", () => {
-    test("Throws 400 if ID is not a number", async () => {
+    test("Throws 400 if id is not a number", async () => {
       const result = await testApp.api.templates[":id"].$delete({
         param: { id: "invalid-id" },
       });

@@ -33,7 +33,7 @@ interface ElementImageProps {
 }
 interface CommonProps {
   id: string;
-  frameID: string | undefined;
+  frameId: string | undefined;
   x: number;
   y: number;
   width: number;
@@ -96,26 +96,26 @@ function ElementText({
   // After drawing a text element switch to edit mode
   useEffect(() => {
     if (element.beingDrawn !== undefined && !element.beingDrawn) {
-      toggleTextEditing(element.frameID, element.ID, true);
+      toggleTextEditing(element.frameId, element.id, true);
     }
-  }, [element.beingDrawn, toggleTextEditing, element.frameID, element.ID]);
+  }, [element.beingDrawn, toggleTextEditing, element.frameId, element.id]);
 
   // If the element gets unselected, turn off beingEdited
   useEffect(() => {
     if (!isSelected && element.beingEdited) {
-      toggleTextEditing(element.frameID, element.ID, false);
+      toggleTextEditing(element.frameId, element.id, false);
     }
   }, [isSelected, element, toggleTextEditing]);
 
   // Handle edit mode turn off outside of this function, so we can set the proper behavior
   const handleOnBlur = () => {
-    if (!element.frameID || !textAreaRef) return;
+    if (!element.frameId || !textAreaRef) return;
     const inputValue = textAreaRef.value;
     if (inputValue !== element.textValue && inputValue !== "") {
-      updateTextValue(element.frameID, element.ID, inputValue);
+      updateTextValue(element.frameId, element.id, inputValue);
     } else if (inputValue === "") {
       // remove if empty
-      deleteElement(element.frameID, element.ID);
+      deleteElement(element.frameId, element.id);
     }
   };
 
@@ -133,7 +133,7 @@ function ElementText({
             onBlur={handleOnBlur}
             onKeyDown={(e) => {
               if (e.key === "Escape") {
-                toggleTextEditing(element.frameID, element.ID, false);
+                toggleTextEditing(element.frameId, element.id, false);
                 handleOnBlur();
               }
             }}
@@ -146,7 +146,7 @@ function ElementText({
         ref={setElementRef}
         onTransform={(e) => {
           e.cancelBubble = true;
-          if (!elementRef || !element.frameID) return;
+          if (!elementRef || !element.frameId) return;
           const scaleX = elementRef.scaleX();
           const scaleY = elementRef.scaleY();
           const size = {
@@ -157,8 +157,8 @@ function ElementText({
           elementRef.scaleX(1);
           elementRef.scaleY(1);
         }}
-        onDblClick={() => toggleTextEditing(element.frameID, element.ID, true)}
-        onDblTap={() => toggleTextEditing(element.frameID, element.ID, true)}
+        onDblClick={() => toggleTextEditing(element.frameId, element.id, true)}
+        onDblTap={() => toggleTextEditing(element.frameId, element.id, true)}
         visible={!element.beingEdited}
         {...props}
       />
@@ -167,6 +167,8 @@ function ElementText({
 }
 
 function ElementImage({ props, imageURL, setElementRef }: ElementImageProps) {
+  // eslint-disable-next-line
+  const { fill, ...rest } = props;
   const [image, status] = useImage(imageURL);
   // handle image loading upon url change
   const [shownImage, setShownImage] = useState<HTMLImageElement | undefined>(
@@ -178,13 +180,13 @@ function ElementImage({ props, imageURL, setElementRef }: ElementImageProps) {
     }
   }, [image, status]);
 
-  return <KImage image={shownImage} {...props} ref={setElementRef} fill="" />;
+  return <KImage image={shownImage} {...rest} ref={setElementRef} />;
 }
 
 export function Element({ element, frameXY }: ElementProps) {
   const tool = useEditorStore((state) => state.tool);
   const isSelected = useEditorStore(
-    (state) => (state.selectedObject as FrameElementData)?.ID === element.ID,
+    (state) => (state.selectedObject as FrameElementData)?.id === element.id,
   );
   const setStoreSelectedObject = useEditorStore(
     (state) => state.setSelectedObject,
@@ -218,8 +220,8 @@ export function Element({ element, frameXY }: ElementProps) {
       a: element.fillOpacity / 100,
     });
     return {
-      id: element.ID,
-      frameID: element.frameID,
+      id: element.id,
+      frameId: element.frameId,
       x: element.x + frameXY.x,
       y: element.y + frameXY.y,
       width: element.width,
@@ -231,7 +233,7 @@ export function Element({ element, frameXY }: ElementProps) {
       onDragStart: setSelectedObject,
       onTransformEnd: (e: Konva.KonvaEventObject<Event>) => {
         e.cancelBubble = true;
-        if (!elementRef || !element.frameID) return;
+        if (!elementRef || !element.frameId) return;
         const scaleX = elementRef.scaleX();
         const scaleY = elementRef.scaleY();
         const size = {
@@ -241,7 +243,7 @@ export function Element({ element, frameXY }: ElementProps) {
         elementRef.setSize(size);
         elementRef.scaleX(1);
         elementRef.scaleY(1);
-        updateElement(element.frameID, {
+        updateElement(element.frameId, {
           ...element,
           x: Math.round(elementRef.x() - frameXY.x),
           y: Math.round(elementRef.y() - frameXY.y),
@@ -250,8 +252,8 @@ export function Element({ element, frameXY }: ElementProps) {
       },
       onDragEnd: (e: Konva.KonvaEventObject<Event>) => {
         e.cancelBubble = true;
-        if (!elementRef || !element.frameID) return;
-        updateElement(element.frameID, {
+        if (!elementRef || !element.frameId) return;
+        updateElement(element.frameId, {
           ...element,
           x: Math.round(elementRef.x() - frameXY.x),
           y: Math.round(elementRef.y() - frameXY.y),

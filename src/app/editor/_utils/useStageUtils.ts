@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import type Konva from "konva";
 import type {
   FrameData,
+  FrameElement,
   FrameElementData,
   ObjectData,
   ObjectType,
@@ -14,12 +15,16 @@ import type {
 } from "./editorTypes";
 import { useUploadThing } from "~/utils/uploadthing";
 import { deleteUTFiles } from "~/server/api/utapi";
+import { showImageUploadToast } from "../_components/imageUploadToast";
+import { useMutationHandlers } from "~/app/_hooks/useMutationHandlers";
+import { useLinkStore } from "./linkStore";
 
 export const useStageUtils = () => {
   const tool = useEditorStore((state) => state.tool);
   const selectedObject = useEditorStore((state) => state.selectedObject);
   const setSelectedObject = useEditorStore((state) => state.setSelectedObject);
   const frames = useFrameStore((state) => state.frames);
+  const links = useLinkStore((state) => state.links);
   const deleteFrame = useFrameStore((state) => state.deleteFrame);
   const addFrame = useFrameStore((state) => state.addFrame);
   const updateFrame = useFrameStore((state) => state.updateFrame);
@@ -35,11 +40,6 @@ export const useStageUtils = () => {
   const removeNewImageData = useEditorStore(
     (state) => state.removeNewImageData,
   );
-  const removeNewImageObject = useEditorStore(
-    (state) => state.removeNewImageObject,
-  );
-  const setNewImageObject = useEditorStore((state) => state.setNewImageObject);
-  const newImageObject = useEditorStore((state) => state.newImageObject);
   const newImageFile = useEditorStore((state) => state.newImageFile);
   const moveFrameToTop = useFrameStore((state) => state.moveFrameToTop);
   const moveFrameToBottom = useFrameStore((state) => state.moveFrameToBottom);
@@ -47,6 +47,12 @@ export const useStageUtils = () => {
   const moveElementToBottom = useFrameStore(
     (state) => state.moveElementToBottom,
   );
+  const projectData = useEditorStore((state) => state.projectData);
+  const addToUploadQueue = useEditorStore((state) => state.addToUploadQueue);
+  const removeFromUploadQueue = useEditorStore(
+    (state) => state.removeFromUploadQueue,
+  );
+  const { updateProject, updateTemplate } = useMutationHandlers();
 
   const drawingPositions = useRef<{
     x: number;
@@ -59,7 +65,7 @@ export const useStageUtils = () => {
     if (clickedOnEmpty) {
       const sElement = selectedObject as TextData;
       if (sElement && sElement.beingEdited) {
-        toggleTextEditing(sElement.frameID, sElement.ID, false);
+        toggleTextEditing(sElement.frameId, sElement.id, false);
         return;
       }
       setSelectedObject(null);
@@ -85,7 +91,7 @@ export const useStageUtils = () => {
     if (tool.type === "frame") {
       setSelectedObject(null);
       const newFrame: FrameData = {
-        ID: uuidv4(),
+        id: uuidv4(),
         name: `Frame ${frames.length}`,
         width: 20,
         height: 20,
@@ -107,11 +113,11 @@ export const useStageUtils = () => {
     }
     const targetAttrs = e.target.attrs as Konva.NodeConfig;
     if (!targetAttrs) return;
-    const frameID = (
-      targetAttrs.frameID === undefined ? targetAttrs.id : targetAttrs.frameID
+    const frameId = (
+      targetAttrs.frameId === undefined ? targetAttrs.id : targetAttrs.frameId
     ) as string;
-    if (!frameID) return;
-    const frame = getFrame(frameID);
+    if (!frameId) return;
+    const frame = getFrame(frameId);
     if (!frame) {
       if (tool.type === "image") {
         removeNewImageData();
@@ -124,8 +130,8 @@ export const useStageUtils = () => {
     };
     if (tool.type === "rectangle") {
       const newRectangle: FrameElementData = {
-        ID: uuidv4(),
-        frameID: frame.ID,
+        id: uuidv4(),
+        frameId: frame.id,
         name: frame.elements
           ? `Rectangle ${frame.elements.length}`
           : "Rectangle 0",
@@ -146,14 +152,14 @@ export const useStageUtils = () => {
     }
     if (tool.type === "text") {
       const newText: TextData = {
-        ID: uuidv4(),
+        id: uuidv4(),
         name: frame.elements ? `Text ${frame.elements.length}` : "Text 0",
         width: 1,
         height: 1,
         x: pos.x - frame.x,
         y: pos.y - frame.y,
         type: "Text" as ObjectType,
-        frameID: frame.ID,
+        frameId: frame.id,
         textValue: "",
         beingEdited: false,
         fill: {
@@ -168,8 +174,8 @@ export const useStageUtils = () => {
     }
     if (tool.type === "image" && newImageData) {
       const newImage: PictureData = {
-        ID: uuidv4(),
-        frameID: frame.ID,
+        id: uuidv4(),
+        frameId: frame.id,
         name: frame.elements ? `Image ${frame.elements.length}` : "Image 0",
         width: 1,
         height: 1,
@@ -202,7 +208,7 @@ export const useStageUtils = () => {
     if (!pos) return;
     const newObject = currentDrawingElement.current;
     if (!newObject) return;
-    const frame = getFrame((newObject as FrameElementData).frameID ?? "");
+    const frame = getFrame((newObject as FrameElementData).frameId ?? "");
     const x1 = drawingPositions.current.x;
     const y1 = drawingPositions.current.y;
     const x2 = pos.x - (frame ? frame.x : 0);
@@ -225,7 +231,7 @@ export const useStageUtils = () => {
       updateFrame(newObject as FrameData, false);
     } else {
       const nElement = newObject as FrameElementData;
-      updateElement(nElement.frameID, nElement, false);
+      updateElement(nElement.frameId, nElement, false);
     }
   };
 
@@ -237,35 +243,35 @@ export const useStageUtils = () => {
       updateFrame(newObject as FrameData, false);
     }
     const nElement = newObject as FrameElementData;
-    if (nElement.frameID) {
+    if (nElement.frameId) {
       if (nElement.beingDrawn) {
         nElement.beingDrawn = false;
-        updateElement(nElement.frameID, nElement, false);
+        updateElement(nElement.frameId, nElement, false);
         if (newObject.type === "Image" && newImageFile) {
-          //void startUpload([newImageFile]);
+          void updateUrlUpload(newImageFile, {
+            id: nElement.id,
+            frameId: nElement.frameId,
+          });
         }
       } else {
         // Set initial values if its not being drawn
         if (nElement.type === "Image") {
-          if (!newImageObject) {
-            setNewImageObject({
-              frameID: nElement.frameID,
-              ID: nElement.ID,
-            });
-          }
           nElement.width = (nElement as PictureData).imageWidth;
           nElement.height = (nElement as PictureData).imageHeight;
           nElement.beingDrawn = false;
-          updateElement(nElement.frameID, nElement, false);
+          updateElement(nElement.frameId, nElement, false);
           // upload image & change imageURL
           if (newImageFile) {
-            //void startUpload([newImageFile]);
+            void updateUrlUpload(newImageFile, {
+              id: nElement.id,
+              frameId: nElement.frameId,
+            });
           }
         } else {
           nElement.width = 100;
           nElement.height = nElement.type === "Text" ? 25 : 100;
           nElement.beingDrawn = false;
-          updateElement(nElement.frameID, nElement, false);
+          updateElement(nElement.frameId, nElement, false);
         }
       }
     }
@@ -313,14 +319,14 @@ export const useStageUtils = () => {
   const deleteSelectedObject = useCallback(() => {
     if (!selectedObject) return;
     if (selectedObject.type === "Frame") {
-      deleteFrame((selectedObject as FrameData).ID);
+      deleteFrame((selectedObject as FrameData).id);
     }
     const sElement = selectedObject as FrameElementData;
-    if (sElement.frameID) {
+    if (sElement.frameId) {
       if (sElement.type === "Image") {
         void deleteUploadedImage((sElement as PictureData).imageKey);
       }
-      deleteElement(sElement.frameID, sElement.ID);
+      deleteElement(sElement.frameId, sElement.id);
     }
   }, [selectedObject, deleteFrame, deleteElement]);
 
@@ -332,36 +338,82 @@ export const useStageUtils = () => {
     if (!selectedObject) return;
     if (selectedObject.type === "Frame") {
       const frame = selectedObject as FrameData;
-      if (place === "top") moveFrameToTop(frame.ID);
-      if (place === "bottom") moveFrameToBottom(frame.ID);
+      if (place === "top") moveFrameToTop(frame.id);
+      if (place === "bottom") moveFrameToBottom(frame.id);
     }
     const sElement = selectedObject as FrameElementData;
-    if (place === "top") moveElementToTop(sElement.frameID, sElement.ID);
-    if (place === "bottom") moveElementToBottom(sElement.frameID, sElement.ID);
+    if (place === "top") moveElementToTop(sElement.frameId, sElement.id);
+    if (place === "bottom") moveElementToBottom(sElement.frameId, sElement.id);
   };
 
-  // eslint-disable-next-line
   const { startUpload } = useUploadThing("imageUploader", {
-    onClientUploadComplete: (res) => {
-      const imageProps = res[0];
-      if (!imageProps) {
-        return;
-      }
-      // handle image url based on upload state
-      if (newImageObject) {
-        updateImageProps(newImageObject, imageProps.ufsUrl, imageProps.key);
-        removeNewImageObject();
-      }
-      // TODO: show sonner/toast for status
-      /* alert("uploaded successfully!"); */
+    onUploadBegin: (fileName) => {
+      showImageUploadToast({
+        type: "start",
+        title: `Uploading ${fileName}`,
+        description: "Project save is temporarily disabled",
+      });
     },
-    /* onUploadError: () => {
-      alert("error occurred while uploading");
-    },
-    onUploadBegin: (file) => {
-      console.log("upload has begun for", file);
-    }, */
   });
+
+  const updateUrlUpload = async (file: File, imageObject: FrameElement) => {
+    addToUploadQueue(imageObject);
+    startUpload([file])
+      .then((res) => {
+        if (!res || res.length === 0) {
+          showImageUploadToast({
+            type: "error",
+            title: "Error uploading image",
+            description: "No response from server",
+          });
+          return;
+        }
+        const imageProps = res[0];
+        if (!imageProps) {
+          showImageUploadToast({
+            type: "error",
+            title: "Error uploading image",
+            description: "No valid response from server",
+          });
+          return;
+        }
+        updateImageProps(imageObject, imageProps.ufsUrl, imageProps.key);
+        showImageUploadToast({
+          type: "success",
+          title: "Upload complete",
+          description: "The project has been saved",
+        });
+        removeFromUploadQueue(imageObject);
+        if (!projectData) return null;
+        const { id: projectId, type: projectType } = projectData;
+        if (projectType === "project") {
+          updateProject({
+            projectId: String(projectId),
+            data: {
+              frames: frames,
+              links: links,
+            },
+          });
+        } else if (projectType === "template") {
+          updateTemplate({
+            templateId: String(projectId),
+            data: {
+              frames: frames,
+              links: links,
+            },
+          });
+        }
+      })
+      .catch((err) => {
+        const error = err as string;
+        showImageUploadToast({
+          type: "error",
+          title: "Error uploading image",
+          description: error,
+        });
+        //TODO: add retry logic
+      });
+  };
 
   return {
     handleStageOnMouseDown,

@@ -43,7 +43,7 @@ export function LinkSettings() {
   const sElement = selectedObject as FrameElement;
   if (selectedObject.linkRole === "parent") {
     // Parent element, show only children which are not linked to this element
-    elements = getRoleElements("child", selectedObject.ID);
+    elements = getRoleElements("child", selectedObject.id);
     addNewLink = (cElement: FrameElement) =>
       addLink({
         parentElement: sElement,
@@ -51,7 +51,7 @@ export function LinkSettings() {
       });
   } else if (selectedObject.linkRole === "child") {
     // Child element, Show only other parent elements
-    elements = getRoleElements("parent", selectedObject.ID);
+    elements = getRoleElements("parent", selectedObject.id);
     addNewLink = (pElement: FrameElement) =>
       addLink({
         parentElement: pElement,
@@ -73,11 +73,11 @@ export function LinkSettings() {
               className="justify-center text-xs hover:!bg-white/5"
               onClick={() => {
                 setLinkRole(
-                  selectedObject.frameID,
-                  selectedObject.ID,
+                  selectedObject.frameId,
+                  selectedObject.id,
                   lRole as "none" | "parent" | "child",
                 );
-                removeRelatedLinks(selectedObject.ID);
+                removeRelatedLinks(selectedObject.id);
               }}
               {...(selectedObject.linkRole !== lRole ? {} : { disabled: true })}
             >
@@ -109,12 +109,12 @@ export function LinkSettings() {
               <CommandGroup className="px-1.5 pb-2">
                 {elements?.map((element) => (
                   <CommandItem
-                    key={element.ID}
+                    key={element.id}
                     value={element.name}
                     onSelect={() => {
                       addNewLink({
-                        frameID: element.frameID,
-                        ID: element.ID,
+                        frameId: element.frameId,
+                        id: element.id,
                       });
                       setOpen(false);
                     }}
@@ -143,7 +143,7 @@ export function LinkList() {
   if (selectedObject.linkRole === "child") {
     // Child element
     const pElement = getRelatedElements(
-      selectedObject.ID,
+      selectedObject.id,
       "child",
     ) as FrameElement | null;
     if (!pElement) return null;
@@ -151,7 +151,7 @@ export function LinkList() {
     return <LinkListItem otherElement={sElement} displayedElement={pElement} />;
   } else if (selectedObject.linkRole === "parent") {
     // Parent element
-    const cElements = getRelatedElements(selectedObject.ID, "parent") as
+    const cElements = getRelatedElements(selectedObject.id, "parent") as
       | FrameElement[]
       | null;
     if (!cElements) return null;
@@ -161,7 +161,7 @@ export function LinkList() {
         <LinkListItem
           otherElement={sElement}
           displayedElement={element}
-          key={element.ID}
+          key={element.id}
         />
       );
     });
@@ -177,8 +177,8 @@ function LinkListItem({
 }) {
   const getElement = useFrameStore((state) => state.getElement);
   const element = getElement(
-    displayedElement.frameID,
-    displayedElement.ID,
+    displayedElement.frameId,
+    displayedElement.id,
   ) as TextData | null;
   const removeLink = useLinkStore((state) => state.removeLink);
   if (!element) return null;

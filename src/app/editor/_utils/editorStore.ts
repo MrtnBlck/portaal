@@ -2,11 +2,15 @@ import { create } from "zustand";
 import type {
   ToolState,
   NewImageData,
-  FrameElement,
   ObjectData,
+  FrameElement,
+  ProjectData,
 } from "./editorTypes";
 
 type EditorStore = {
+  // Project/Template Data
+  projectData: ProjectData | null;
+  setProjectData: (data: ProjectData) => void;
   // Editor UI handling
   selectedObject: ObjectData | null;
   setSelectedObject: (object: ObjectData | null) => void;
@@ -15,18 +19,17 @@ type EditorStore = {
   stageScale: number;
   setStageScale: (scale: number) => void;
   // Image handling
-  // size & tmp src
   newImageData: NewImageData | null;
   addNewImageData: (newImageData: NewImageData) => void;
   removeNewImageData: () => void;
-  // url update
-  newImageObject: FrameElement | null;
-  setNewImageObject: (newImageObject: FrameElement) => void;
-  removeNewImageObject: () => void;
   // tmp file storing for postponed upload
   newImageFile: File | null;
   setNewImageFile: (newImageFile: File) => void;
   removeNewImageFile: () => void;
+  // file upload queue
+  uploadQueue: FrameElement[];
+  addToUploadQueue: (newElement: FrameElement) => void;
+  removeFromUploadQueue: (removeElement: FrameElement) => void;
   // User mode handling
   userMode: "normal" | "designer";
   toggleUserMode: (mode?: "normal" | "designer") => void;
@@ -38,6 +41,11 @@ type EditorStore = {
 };
 
 export const useEditorStore = create<EditorStore>((set, get) => ({
+  // Project/Template Data
+  projectData: null,
+  setProjectData: (data) => {
+    set({ projectData: data });
+  },
   // Editor UI handling
   selectedObject: null,
   setSelectedObject: (object) => set({ selectedObject: object }),
@@ -52,13 +60,24 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   newImageData: null,
   addNewImageData: (newImageData) => set({ newImageData: newImageData }),
   removeNewImageData: () => set({ newImageData: null }),
-  newImageObject: null,
-  setNewImageObject: (newImageObject) =>
-    set({ newImageObject: newImageObject }),
-  removeNewImageObject: () => set({ newImageObject: null }),
+  // tmp file storing for postponed upload
   newImageFile: null,
   setNewImageFile: (newImageFile) => set({ newImageFile: newImageFile }),
   removeNewImageFile: () => set({ newImageFile: null }),
+  // file upload queue
+  uploadQueue: [],
+  addToUploadQueue: (newElement) => {
+    const uploadQueue = get().uploadQueue;
+    const updatedUploadQueue = [...uploadQueue, newElement];
+    set({ uploadQueue: updatedUploadQueue });
+  },
+  removeFromUploadQueue: (removeElement) => {
+    const uploadQueue = get().uploadQueue;
+    const updatedUploadQueue = uploadQueue.filter(
+      (element) => element.id !== removeElement.id,
+    );
+    set({ uploadQueue: updatedUploadQueue });
+  },
   // User mode handling
   userMode: "normal",
   toggleUserMode: (mode?: "normal" | "designer") => {

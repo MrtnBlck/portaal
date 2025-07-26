@@ -31,6 +31,7 @@ function TopnavInner() {
   const pathname = usePathname();
   const isTemplatesPage = pathname === "/templates";
   const isProjectsPage = pathname === "/projects";
+  const isChatPage = pathname.startsWith("/chat");
 
   return (
     <div className="flex gap-6">
@@ -56,6 +57,18 @@ function TopnavInner() {
           }}
         >
           My Projects
+        </Button>
+      )}
+      {!isChatPage && (
+        <Button
+          size="none"
+          variant="none"
+          className="text-neutral-200/90 hover:text-white"
+          onClick={() => {
+            router.push("/chat");
+          }}
+        >
+          Chat
         </Button>
       )}
       <UserButton

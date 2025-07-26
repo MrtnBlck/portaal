@@ -2,7 +2,7 @@
 
 ## What is Portaal?
 
-Portaal is a platform that aims to ease the process of graphic design for professionals and amateurs alike. It provides the necessary tools to create design templates, allowing other users to create their own, customized designs without needing any prior graphic design knowledge.
+Portaal is a platform that aims to ease the process of graphic design for professionals and amateurs alike. It provides the necessary tools to create design templates, using which other users can create their own, customized designs without needing to have any prior knowledge of graphic design.
 
 ## Table of contents
 
@@ -17,6 +17,8 @@ Visit [portaal-chi.vercel.app](https://portaal-chi.vercel.app/) to see the appli
 
 ## Usage
 
+### For average users
+
 **1. Sign in and create a new project.**\
 **2. Choose a template.**
 
@@ -30,16 +32,29 @@ Visit [portaal-chi.vercel.app](https://portaal-chi.vercel.app/) to see the appli
 ![normal mode](./Readme%20pictures/normal.png)
 
 > [!NOTE]
-> Portaal's "linked elements" feature enables synchronization of elements across multiple instances, allowing simultaneous updates across various design formats. Currently, this feature supports text elements only.
+> Portaal's "linked elements" feature enables synchronization of elements across multiple instances, allowing simultaneous updates to various design formats. Currently, this feature supports text elements only.
 
 **4. Export and enjoy!**
+
+### Messages
+
+Need help or want to request changes to a template? You can message and share your project with the template creator!
+
+![sharing](./Readme%20pictures/projectShareDialog.png)
+
+For each project a new conversation channel is created, where you can discuss the project with the template creator.
+
+![message](./Readme%20pictures/chats.png)
+
+> [!TIP]
+> The messaging is real-time and supports read receipts, so you can see when the other user has read your message.
 
 ### For professionals
 
 **1. Sign in and create a new project or a new template.**
 
 > [!TIP]
-> You can create a template from an existing project if the original template is editable.
+> You can make a template from an existing project, if the selected template for the project is editable.
 
 **2. Make something awesome!**
 
@@ -50,7 +65,7 @@ Visit [portaal-chi.vercel.app](https://portaal-chi.vercel.app/) to see the appli
 
 **3. Set up linked elements.**
 
-In the properties panel, you'll find an option to link different elements together, which will synchronize their values. The parent elements will appear in the linked elements panel for the template users.
+In the properties panel there is an option to link different elements together, which will make their values synchronize. The parent elements will appear in the linked elements panel for the template users.
 
 ![linked elements](./Readme%20pictures/linkedElements.png)
 
@@ -60,9 +75,9 @@ In the properties panel, you'll find an option to link different elements togeth
 
 ### Technology stack
 
-- **Frontend**: Next.js, React, Tailwind, Zustand, Tanstack Query, Konva.js
-- **Backend**: Drizzle ORM, Hono, Zod
-- **Services**: Neon Postgres, Clerk, Uploadthing
+- **Frontend**: Next.js, React, Tailwind, Zustand, Tanstack Query, Konva.js, dndkit
+- **Backend**: Drizzle ORM, Hono, Zod, Convex
+- **Services**: Neon Postgres, Clerk, Uploadthing, Convex
 
 ### Set up
 
@@ -77,7 +92,7 @@ bun install
 
 ### Environment variables
 
-To run the project locally a `.env` file is required with the following variables:
+To run the project locally a `.env.local` file is required with the following variables:
 
 ```dotenv
 # Clerk API keys
@@ -97,6 +112,12 @@ PUBLIC_URL_PROD=""
 
 # Uploadthing token
 UPLOADTHING_TOKEN=""
+
+# Convex configuration
+CONVEX_DEPLOYMENT=""
+NEXT_PUBLIC_CONVEX_URL=""
+NEXT_PUBLIC_CLERK_FRONTEND_API_URL=""
+CLERK_WEBHOOK_SECRET=""
 ```
 
 To get the necessary keys visit the following websites:
@@ -104,10 +125,11 @@ To get the necessary keys visit the following websites:
 - [Clerk](https://clerk.dev/)
 - [Neon Postgres](https://neon.tech/)
 - [Uploadthing](https://uploadthing.com/)
+- [Convex](https://convex.dev/)
 
 ## Planned features
 
-Portaal is still in development, therefore its features are quite limited.
+Portaal is still in development, therefore it's features are quite limited.
 
 ### Editor
 
@@ -115,10 +137,8 @@ Portaal is still in development, therefore its features are quite limited.
 - More element types (shapes, vectors, adjusment layers, etc.)
 - More element properties (fonts, alignments, strokes, effects, etc.)
 - Better layer management & grouping
-- Async actions notifications (project saving, photo uploading)
 
 ### Other
 
-- Integrated messaging between template creators and users
 - Project sharing
 - Responsiveness improvements
